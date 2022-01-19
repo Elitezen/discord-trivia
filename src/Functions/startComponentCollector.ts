@@ -10,15 +10,10 @@ import { getQuestions, TriviaQuestionDifficulty, TriviaQuestionType } from "easy
 import TriviaGame from "../Classes/TriviaGame";
 import { joinButton, joinButtonDisabled } from '../Components/messageButtons';
 import { TriviaPlayer } from "../Typings/interfaces";
+import ReplaceOptions, { ReplaceOptionsEmbed } from "./replaceOptions";
 
 const startComponentCollector = async(game:TriviaGame, guild:Guild, channel:TextBasedChannel) => {
-  const queueEmbed = new MessageEmbed()
-    .setTitle('TITLE HERE')
-    .setColor('BLUE') // Allow 'theme' option for <TriviaManagerOptions> as a Disocrd.JS <ColorResolvable> and use here
-    .setDescription('DESC. HERE')
-    .setFooter({
-      text: 'FOOTER HERE'
-    });
+  const queueEmbed = game.options.gameMessages.gameEmbed;
   const queueMessage = await channel.send({
     embeds: [queueEmbed],
     components: [
@@ -27,7 +22,7 @@ const startComponentCollector = async(game:TriviaGame, guild:Guild, channel:Text
     ]
   });
 
-  const filter = (i:MessageComponentInteraction) => i.customId == 'join';
+  const filter = (i:MessageComponentInteraction) => i.customId == 'join'; //Maybe add a `customFilter` option in the future
   const collector = channel.createMessageComponentCollector({
     filter,
     time: game.options.queueTime
@@ -36,7 +31,7 @@ const startComponentCollector = async(game:TriviaGame, guild:Guild, channel:Text
   collector.on('collect', async int => {
     if (game.data.players.has(int.user.id)) {
       const inQueueAlready: InteractionReplyOptions = {
-        content: `**<ALREADY QUEUED UP> ${int.user.username}!**`,
+        content: ReplaceOptions(game.options.gameMessages.alreadyJoined, { user: int.user }),
         ephemeral: true
       };
 
@@ -57,7 +52,7 @@ const startComponentCollector = async(game:TriviaGame, guild:Guild, channel:Text
       game.data.players.set(member.id, player);
 
       const queuedNotification: InteractionReplyOptions = {
-        content: `You have joined the queue`,
+        content: ReplaceOptions(game.options.gameMessages.joinedQueue, { user: int.user }),
         ephemeral: true
       };
 
@@ -68,14 +63,13 @@ const startComponentCollector = async(game:TriviaGame, guild:Guild, channel:Text
       }
 
       await channel.send({
-        content: `**${int.user.username} <HAS JOINED QUEUE>**`
+        content: ReplaceOptions(game.options.gameMessages.playerJoinedQueue, { user: int.user })
       });
 
       if (game.data.players.size == game.options.maxPlayerCount) {
         await queueMessage.edit({
           embeds: [
-            queueEmbed
-              .setFooter({ text: '<QUEUE NOW FULL>' })
+              ReplaceOptionsEmbed(game.options.gameMessages.gameEmbedReady, { user: int.user })
           ],
           components: [
             new MessageActionRow()
