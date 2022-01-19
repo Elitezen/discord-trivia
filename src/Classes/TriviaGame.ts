@@ -1,4 +1,5 @@
-import { Collection, CommandInteraction, GuildMember, MessageEmbed } from "discord.js";
+import { Collection, CommandInteraction, GuildMember, MessageButton, MessageEmbed } from "discord.js";
+import { Categories } from "easy-trivia";
 import startComponentCollector from "../Functions/startComponentCollector";
 import { TriviaGameData, TriviaGameOptions, TriviaGameOptionsStrict } from "../Typings/interfaces";
 import validateTriviaGameOptions from "../Utility/validateTriviaGameOptions";
@@ -19,7 +20,8 @@ export default class TriviaGame {
     minPlayerCount: 1,
     maxPlayerCount: 50,
     timePerQuestion: 20_000,
-    triviaCategory: null,
+    //@ts-expect-error
+    triviaCategory: Categories.categoryById((Categories.random())),
     questionAmount: 10,
     questionDifficulty: null,
     questionType: null,
@@ -40,7 +42,13 @@ export default class TriviaGame {
       joinedQueue: "You have joined the queue!",
       playerJoinedQueue: "{{playerMention}} has joined the queue",
       startMessage: "The game has started waiting for players. Once all the players have joined the game will begin!",
-      alreadyJoined: "You already joined this game!"
+      alreadyJoined: "You already joined this game!",
+      joinButton: new MessageButton()
+      .setLabel("Join")
+      .setStyle("PRIMARY"),
+      baseLeaderboardEmbed: new MessageEmbed()
+      .setColor("BLUE")
+      .setTitle("Trivia game leaderboard.")
     }
   };
 

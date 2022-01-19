@@ -1,4 +1,4 @@
-import { Collection, GuildMember, MessageEmbed, Snowflake } from "discord.js";
+import { Collection, GuildMember, MessageButton, MessageEmbed, Snowflake } from "discord.js";
 import { TriviaCategoryName, TriviaQuestionDifficulty, TriviaQuestionType } from "easy-trivia";
 
 export interface TriviaGameData {
@@ -13,6 +13,8 @@ export interface TriviaGameMessages {
   gameEmbedReady: MessageEmbed;
   startMessage: string;
   joinedQueue: string; //This message is ephemeral
+  joinButton: MessageButton;
+  baseLeaderboardEmbed: MessageEmbed;
 }
 
 
