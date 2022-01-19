@@ -20,8 +20,7 @@ export default class TriviaGame {
     minPlayerCount: 1,
     maxPlayerCount: 50,
     timePerQuestion: 20_000,
-    //@ts-expect-error
-    triviaCategory: Categories.categoryById((Categories.random())),
+    triviaCategory: null,
     questionAmount: 10,
     questionDifficulty: null,
     questionType: null,
