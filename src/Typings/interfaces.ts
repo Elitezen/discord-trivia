@@ -29,7 +29,7 @@ export interface TriviaGameOptions {
   questionDifficulty?: TriviaQuestionDifficulty | null;
   questionType?: TriviaQuestionType | null;
   queueTime?: number;
-  gameMessages: TriviaGameMessages
+  gameMessages: TriviaGameMessages;
 }
 
 export interface TriviaGameOptionsStrict {
@@ -41,7 +41,7 @@ export interface TriviaGameOptionsStrict {
   questionDifficulty: TriviaQuestionDifficulty | null;
   questionType: TriviaQuestionType | null;
   queueTime: number;
-  gameMessages: TriviaGameMessages
+  gameMessages: TriviaGameMessages;
 }
 
 export interface TriviaManagerOptions {
