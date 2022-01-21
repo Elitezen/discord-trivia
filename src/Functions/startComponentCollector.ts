@@ -18,6 +18,7 @@ const startComponentCollector = async(game:TriviaGame, guild:Guild, channel:Text
   const messages = game.options.gameMessages || TriviaGame.defaults.gameMessages;
   const queueEmbed = messages.gameEmbed;
   const button = messages.joinButton || joinButton;
+  const startButton = messages.startButton;
 
   const queueMessage = await channel.send({
     embeds: [queueEmbed],
@@ -26,6 +27,9 @@ const startComponentCollector = async(game:TriviaGame, guild:Guild, channel:Text
         .addComponents(verifyButton(button, {
           noLink: true,
           customId: constants.libraryDefaults.defaultJoinButtonCustomId
+        }), verifyButton(startButton, {
+          customId: constants.libraryDefaults.defaultStartButtonCustomId,
+          noLink: true
         }))
     ]
   });
@@ -37,58 +41,66 @@ const startComponentCollector = async(game:TriviaGame, guild:Guild, channel:Text
   });
 
   collector.on('collect', async int => {
-    if (game.data.players.has(int.user.id)) {
-      const inQueueAlready: InteractionReplyOptions = {
-        content: ReplaceOptions(messages.alreadyJoined, { user: int.user }),
-        ephemeral: true
-      };
-
-      if (int.replied) {
-        await int.followUp(inQueueAlready);
+    if(int.customId == constants.libraryDefaults.defaultJoinButtonCustomId) {
+      if (game.data.players.has(int.user.id)) {
+        const inQueueAlready: InteractionReplyOptions = {
+          content: ReplaceOptions(messages.alreadyJoined, { user: int.user }),
+          ephemeral: true
+        };
+  
+        if (int.replied) {
+          await int.followUp(inQueueAlready);
+        } else {
+          await int.reply(inQueueAlready);
+        }
       } else {
-        await int.reply(inQueueAlready);
-      }
-    } else {
-      const member = await guild.members.fetch(int.user.id);
-      if (!member) return; // Throw Error
-
-      const player: TriviaPlayer = {
-        member,
-        points: 0
-      };
-
-      game.data.players.set(member.id, player);
-
-      const queuedNotification: InteractionReplyOptions = {
-        content: ReplaceOptions(messages.joinedQueue, { user: int.user }),
-        ephemeral: true
-      };
-
-      if (int.replied) {
-        await int.followUp(queuedNotification);
-      } else {
-        await int.reply(queuedNotification);
-      }
-
-      await channel.send({
-        content: ReplaceOptions(messages.playerJoinedQueue, { user: int.user })
-      });
-
-      if (game.data.players.size == game.options.maxPlayerCount) {
-        await queueMessage.edit({
-          embeds: [
-              ReplaceOptionsEmbed(messages.gameEmbedReady, { user: int.user })
-          ],
-          components: [
-            new MessageActionRow()
-              .addComponents(verifyButton(button, {
-                noLink: true,
-                disabled: true,
-                customId: constants.libraryDefaults.defaultJoinButtonCustomId
-              }))
-          ]
+        const member = await guild.members.fetch(int.user.id);
+        if (!member) return; // Throw Error
+  
+        const player: TriviaPlayer = {
+          member,
+          points: 0
+        };
+  
+        game.data.players.set(member.id, player);
+  
+        const queuedNotification: InteractionReplyOptions = {
+          content: ReplaceOptions(messages.joinedQueue, { user: int.user }),
+          ephemeral: true
+        };
+  
+        if (int.replied) {
+          await int.followUp(queuedNotification);
+        } else {
+          await int.reply(queuedNotification);
+        }
+  
+        await channel.send({
+          content: ReplaceOptions(messages.playerJoinedQueue, { user: int.user })
         });
+  
+        if (game.data.players.size == game.options.maxPlayerCount) {
+          await queueMessage.edit({
+            embeds: [
+                ReplaceOptionsEmbed(messages.gameEmbedReady, { user: int.user })
+            ],
+            components: [
+              new MessageActionRow()
+                .addComponents(verifyButton(button, {
+                  noLink: true,
+                  customId: constants.libraryDefaults.defaultJoinButtonCustomId,
+                  disabled: true
+                }), verifyButton(startButton, {
+                  customId: constants.libraryDefaults.defaultStartButtonCustomId,
+                  noLink: true,
+                  disabled: true
+                }))
+            ]
+          });
+        }
       }
+    } else if(int.customId == constants.libraryDefaults.defaultStartButtonCustomId) {
+      collector.emit("collect", int);
     }
   });
 

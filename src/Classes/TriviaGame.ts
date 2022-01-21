@@ -1,5 +1,6 @@
 import { Collection, ColorResolvable, CommandInteraction, GuildMember, MessageButton, MessageEmbed } from "discord.js";
 import { Categories } from "easy-trivia";
+import constants from "../../constants";
 import startComponentCollector from "../Functions/startComponentCollector";
 import { TriviaGameData, TriviaGameOptions, TriviaGameOptionsStrict } from "../Typings/interfaces";
 import validateTriviaGameOptions from "../Utility/validateTriviaGameOptions";
@@ -47,12 +48,24 @@ export default class TriviaGame {
       joinButton: new MessageButton()
       .setLabel("Join")
       .setStyle("PRIMARY")
-      .setCustomId("not-yet-added"),
+      .setCustomId(constants.libraryDefaults.defaultJoinButtonCustomId),
       baseLeaderboardEmbed: new MessageEmbed()
       .setColor(this.BaseColor)
       .setTitle("Trivia game leaderboard."),
       baseQuestionEmbed: new MessageEmbed()
+      .setColor(this.BaseColor),
+      correctEmbed: new MessageEmbed()
       .setColor(this.BaseColor)
+      .setTitle(`✅ Correct Answer!`)
+      .setDescription(`{{playerMention}} guessed the right answer!`),
+      incorrectEmbed: new MessageEmbed()
+      .setColor(this.BaseColor)
+      .setTitle(`❌ Incorrect Answer!`)
+      .setDescription(`You did not guess the right answer!`),
+      startButton: new MessageButton()
+      .setCustomId(constants.libraryDefaults.defaultStartButtonCustomId)
+      .setStyle("SECONDARY")
+      .setLabel(`Start Game`)
     }
   };
 
