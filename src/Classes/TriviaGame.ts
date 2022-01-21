@@ -1,4 +1,4 @@
-import { Collection, CommandInteraction, GuildMember, MessageButton, MessageEmbed } from "discord.js";
+import { Collection, ColorResolvable, CommandInteraction, GuildMember, MessageButton, MessageEmbed } from "discord.js";
 import { Categories } from "easy-trivia";
 import startComponentCollector from "../Functions/startComponentCollector";
 import { TriviaGameData, TriviaGameOptions, TriviaGameOptionsStrict } from "../Typings/interfaces";
@@ -16,6 +16,8 @@ export default class TriviaGame {
     players: new Collection()
   };
 
+  private static readonly BaseColor:ColorResolvable = "BLURPLE";
+
   public static readonly defaults:TriviaGameOptionsStrict = {
     minPlayerCount: 1,
     maxPlayerCount: 50,
@@ -26,30 +28,31 @@ export default class TriviaGame {
     questionType: null,
     queueTime: 15_000,
     gameMessages: {
-      alreadyJoined: "You already joined this game!",
-      baseLeaderboardEmbed: new MessageEmbed()
-        .setColor("BLUE")
-        .setTitle("Trivia game leaderboard."),
-      gameEmbed: new MessageEmbed()
-        .setTitle(`Trivia Game`)
-        .setColor('BLUE')
-        .setDescription('A new trivia game is starting!')
-        .setFooter({
-          text: 'Discord Trivia'
-        }),
-      gameEmbedStart: new MessageEmbed()
-        .setTitle(`Trivia Game Started`)
-        .setColor('BLUE')
-        .setDescription('The game has started! All the players have joined.')
-        .setFooter({
-          text: 'Discord Trivia'
-        }),
-      joinButton: new MessageButton()
-        .setLabel("Join")
-        .setStyle("PRIMARY"),
+      gameEmbed: new MessageEmbed().setTitle(`Trivia Game`)
+      .setColor(this.BaseColor)
+      .setDescription('A new trivia game is starting!')
+      .setFooter({
+        text: 'Discord Trivia'
+      }),
+      gameEmbedReady: new MessageEmbed().setTitle(`Trivia Game Started`)
+      .setColor(this.BaseColor)
+      .setDescription('The game has started! All the players have joined.')
+      .setFooter({
+        text: 'Discord Trivia'
+      }),
       joinedQueue: "You have joined the queue!",
       playerJoinedQueue: "{{playerMention}} has joined the queue",
       startMessage: "The game has started waiting for players. Once all the players have joined the game will begin!",
+      alreadyJoined: "You already joined this game!",
+      joinButton: new MessageButton()
+      .setLabel("Join")
+      .setStyle("PRIMARY")
+      .setCustomId("not-yet-added"),
+      baseLeaderboardEmbed: new MessageEmbed()
+      .setColor(this.BaseColor)
+      .setTitle("Trivia game leaderboard."),
+      baseQuestionEmbed: new MessageEmbed()
+      .setColor(this.BaseColor)
     }
   };
 

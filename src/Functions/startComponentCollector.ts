@@ -2,8 +2,7 @@ import {
   Guild, 
   InteractionReplyOptions, 
   MessageActionRow, 
-  MessageComponentInteraction, 
-  MessageEmbed, 
+  MessageComponentInteraction,
   TextBasedChannel 
 } from "discord.js";
 import { getQuestions, TriviaQuestionDifficulty, TriviaQuestionType } from "easy-trivia";
@@ -78,7 +77,7 @@ const startComponentCollector = async(game:TriviaGame, guild:Guild, channel:Text
       if (game.data.players.size == game.options.maxPlayerCount) {
         await queueMessage.edit({
           embeds: [
-              ReplaceOptionsEmbed(messages.gameEmbedStart, { user: int.user })
+              ReplaceOptionsEmbed(messages.gameEmbedReady, { user: int.user })
           ],
           components: [
             new MessageActionRow()

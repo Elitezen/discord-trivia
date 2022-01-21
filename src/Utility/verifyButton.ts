@@ -9,6 +9,7 @@ const defaults: VerifyButtonOptions = {
 };
 
 function verifyButton(button: MessageButton, options?: VerifyButtonOptions): MessageButton {
+  
   if (options) {
     options = Object.assign(defaults, options);
   } else {

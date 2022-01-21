@@ -40,9 +40,7 @@ const emitQuestion = (game:TriviaGame, channel:TextBasedChannel, q:TriviaQuestio
       
     });
 
-    collector.on('end', async _ => {
-      
-    });
+    // collector end
   });
 };
 

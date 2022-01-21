@@ -7,7 +7,7 @@ import emitQuestion from "./emitQuestion";
 const wait = promisify(setTimeout);
 
 const startGame = async(game:TriviaGame, channel: TextBasedChannel, questions:TriviaQuestion[]) => {
-  const embed = (game.options.gameMessages || TriviaGame.defaults.gameMessages).gameEmbedStart;
+  const embed = (game.options.gameMessages || TriviaGame.defaults.gameMessages).gameEmbedReady;
   await channel.send({
     embeds: [embed]
   });
