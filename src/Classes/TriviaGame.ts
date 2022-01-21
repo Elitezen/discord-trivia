@@ -1,4 +1,4 @@
-import { Collection, CommandInteraction, GuildMember, MessageButton, MessageEmbed } from "discord.js";
+import { Collection, ColorResolvable, CommandInteraction, GuildMember, MessageButton, MessageEmbed } from "discord.js";
 import { Categories } from "easy-trivia";
 import startComponentCollector from "../Functions/startComponentCollector";
 import { TriviaGameData, TriviaGameOptions, TriviaGameOptionsStrict } from "../Typings/interfaces";
@@ -16,6 +16,8 @@ export default class TriviaGame {
     players: new Collection()
   };
 
+  private static readonly BaseColor:ColorResolvable = "BLURPLE";
+
   public static readonly defaults:TriviaGameOptionsStrict = {
     minPlayerCount: 1,
     maxPlayerCount: 50,
@@ -27,13 +29,13 @@ export default class TriviaGame {
     queueTime: 15_000,
     gameMessages: {
       gameEmbed: new MessageEmbed().setTitle(`Trivia Game`)
-      .setColor('BLUE')
+      .setColor(this.BaseColor)
       .setDescription('A new trivia game is starting!')
       .setFooter({
         text: 'Discord Trivia'
       }),
       gameEmbedReady: new MessageEmbed().setTitle(`Trivia Game Started`)
-      .setColor('BLUE')
+      .setColor(this.BaseColor)
       .setDescription('The game has started! All the players have joined.')
       .setFooter({
         text: 'Discord Trivia'
@@ -44,10 +46,13 @@ export default class TriviaGame {
       alreadyJoined: "You already joined this game!",
       joinButton: new MessageButton()
       .setLabel("Join")
-      .setStyle("PRIMARY"),
+      .setStyle("PRIMARY")
+      .setCustomId("not-yet-added"),
       baseLeaderboardEmbed: new MessageEmbed()
-      .setColor("BLUE")
-      .setTitle("Trivia game leaderboard.")
+      .setColor(this.BaseColor)
+      .setTitle("Trivia game leaderboard."),
+      baseQuestionEmbed: new MessageEmbed()
+      .setColor(this.BaseColor)
     }
   };
 
