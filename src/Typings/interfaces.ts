@@ -8,13 +8,14 @@ export interface TriviaGameData {
 
 export interface TriviaGameMessages {
   playerJoinedQueue: string; //This is the message that everyone sees
-  gameEmbed: MessageEmbed;
-  alreadyJoined: string;
-  gameEmbedReady: MessageEmbed;
-  startMessage: string;
+  gameEmbed: MessageEmbed; //Start embed
+  alreadyJoined: string; //Already joined message
+  gameEmbedReady: MessageEmbed; //Start embed edited
+  startMessage: string; //Started game ephemeral message
   joinedQueue: string; //This message is ephemeral
-  joinButton: MessageButton;
-  baseLeaderboardEmbed: MessageEmbed;
+  joinButton: MessageButton; //Join button to join game uses `.setDisabled()` to disable it
+  baseLeaderboardEmbed: MessageEmbed; //Base leaderboard embed set color, title, description
+  baseQuestionEmbed: MessageEmbed; //Question embed you can set the color here
 }
 
 
@@ -29,7 +30,7 @@ export interface TriviaGameOptions {
   questionDifficulty?: TriviaQuestionDifficulty | null;
   questionType?: TriviaQuestionType | null;
   queueTime?: number;
-  gameMessages: TriviaGameMessages
+  gameMessages: TriviaGameMessages;
 }
 
 export interface TriviaGameOptionsStrict {
@@ -41,7 +42,7 @@ export interface TriviaGameOptionsStrict {
   questionDifficulty: TriviaQuestionDifficulty | null;
   questionType: TriviaQuestionType | null;
   queueTime: number;
-  gameMessages: TriviaGameMessages
+  gameMessages: TriviaGameMessages;
 }
 
 export interface TriviaManagerOptions {

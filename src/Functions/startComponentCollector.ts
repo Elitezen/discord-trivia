@@ -12,7 +12,7 @@ import { joinButton, verifyButton } from '../Components/messageButtons';
 import { TriviaPlayer } from "../Typings/interfaces";
 import ReplaceOptions, { ReplaceOptionsEmbed } from "./replaceOptions";
 
-const startComponentCollector = async(game:TriviaGame, guild:Guild, channel:TextBasedChannel) => {
+const startComponentCollector = async (game:TriviaGame, guild:Guild, channel:TextBasedChannel) => {
   const queueEmbed = game.options.gameMessages.gameEmbed;
   const button = game.options.gameMessages.joinButton || joinButton;
   const customId = `discord_trivia_join_button`;
@@ -103,6 +103,7 @@ const startComponentCollector = async(game:TriviaGame, guild:Guild, channel:Text
         difficulty: game.options.questionDifficulty as TriviaQuestionDifficulty,
         type: game.options.questionType as TriviaQuestionType
       }));
+      
       // initGame();
     }
   }); 
