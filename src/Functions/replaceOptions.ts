@@ -7,7 +7,10 @@ interface ReplaceOptionsOptions {
 export default function ReplaceOptions(text: string | null, options: ReplaceOptionsOptions): string {
     if(!text) throw TypeError("text cannot be null")
 
-    return text.replace("{{player}}", options.user.username).replace("{{playerName}}", options.user.username).replace("{{playerMention}}", options.user.toString());
+    return text
+        .replace("{{player}}", options.user.username)
+        .replace("{{playerName}}", options.user.username)
+        .replace("{{playerMention}}", options.user.toString());
 }
 
 export function ReplaceOptionsEmbed(embed: MessageEmbed, options: ReplaceOptionsOptions): MessageEmbed {

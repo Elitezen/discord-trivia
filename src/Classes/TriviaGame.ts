@@ -20,35 +20,36 @@ export default class TriviaGame {
     minPlayerCount: 1,
     maxPlayerCount: 50,
     timePerQuestion: 20_000,
-    //@ts-expect-error
-    triviaCategory: Categories.categoryById((Categories.random())),
+    triviaCategory: null,
     questionAmount: 10,
     questionDifficulty: null,
     questionType: null,
     queueTime: 15_000,
     gameMessages: {
-      gameEmbed: new MessageEmbed().setTitle(`Trivia Game`)
-      .setColor('BLUE')
-      .setDescription('A new trivia game is starting!')
-      .setFooter({
-        text: 'Discord Trivia'
-      }),
-      gameEmbedReady: new MessageEmbed().setTitle(`Trivia Game Started`)
-      .setColor('BLUE')
-      .setDescription('The game has started! All the players have joined.')
-      .setFooter({
-        text: 'Discord Trivia'
-      }),
+      alreadyJoined: "You already joined this game!",
+      baseLeaderboardEmbed: new MessageEmbed()
+        .setColor("BLUE")
+        .setTitle("Trivia game leaderboard."),
+      gameEmbed: new MessageEmbed()
+        .setTitle(`Trivia Game`)
+        .setColor('BLUE')
+        .setDescription('A new trivia game is starting!')
+        .setFooter({
+          text: 'Discord Trivia'
+        }),
+      gameEmbedStart: new MessageEmbed()
+        .setTitle(`Trivia Game Started`)
+        .setColor('BLUE')
+        .setDescription('The game has started! All the players have joined.')
+        .setFooter({
+          text: 'Discord Trivia'
+        }),
+      joinButton: new MessageButton()
+        .setLabel("Join")
+        .setStyle("PRIMARY"),
       joinedQueue: "You have joined the queue!",
       playerJoinedQueue: "{{playerMention}} has joined the queue",
       startMessage: "The game has started waiting for players. Once all the players have joined the game will begin!",
-      alreadyJoined: "You already joined this game!",
-      joinButton: new MessageButton()
-      .setLabel("Join")
-      .setStyle("PRIMARY"),
-      baseLeaderboardEmbed: new MessageEmbed()
-      .setColor("BLUE")
-      .setTitle("Trivia game leaderboard.")
     }
   };
 
@@ -72,7 +73,7 @@ export default class TriviaGame {
       try {
         validateTriviaGameOptions(this.options);
 
-        if (!this.interaction.guildId) return; // Throw Error
+        if (!this.interaction.guildId) throw new TypeError('guildId returned falsey');
 
         const { options } = this;
 
@@ -82,7 +83,7 @@ export default class TriviaGame {
         const channel = await this.interaction.client.channels
           .fetch(this.interaction.channelId);
 
-        if (channel == null || !channel.isText()) return; // Throw Error
+        if (channel == null || !channel.isText()) throw new TypeError('channel returned null or is not of type text');
         if (this.manager.games.has(channel.id)) reject(new DiscordTriviaError(
           'There can only be one ongoing game per channel',
           'GAME_IN_PROGRESS'
@@ -91,7 +92,7 @@ export default class TriviaGame {
         this.manager.games.set(channel.id, this);
 
         this.interaction.reply({
-          content: options.gameMessages.startMessage,
+          content: (options.gameMessages || TriviaGame.defaults.gameMessages).startMessage,
           ephemeral: true
         });
 

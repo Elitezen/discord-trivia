@@ -7,15 +7,18 @@ import {
   TextBasedChannel 
 } from "discord.js";
 import { getQuestions, TriviaQuestionDifficulty, TriviaQuestionType } from "easy-trivia";
+import constants from "../../constants";
 import TriviaGame from "../Classes/TriviaGame";
-import { joinButton, verifyButton } from '../Components/messageButtons';
+import { joinButton } from '../Components/messageButtons';
 import { TriviaPlayer } from "../Typings/interfaces";
 import ReplaceOptions, { ReplaceOptionsEmbed } from "./replaceOptions";
+import startGame from "./startGame";
+import verifyButton from "../Utility/verifyButton";
 
 const startComponentCollector = async(game:TriviaGame, guild:Guild, channel:TextBasedChannel) => {
-  const queueEmbed = game.options.gameMessages.gameEmbed;
-  const button = game.options.gameMessages.joinButton || joinButton;
-  const customId = `discord_trivia_join_button`;
+  const messages = game.options.gameMessages || TriviaGame.defaults.gameMessages;
+  const queueEmbed = messages.gameEmbed;
+  const button = messages.joinButton || joinButton;
 
   const queueMessage = await channel.send({
     embeds: [queueEmbed],
@@ -23,12 +26,12 @@ const startComponentCollector = async(game:TriviaGame, guild:Guild, channel:Text
       new MessageActionRow()
         .addComponents(verifyButton(button, {
           noLink: true,
-          customId: customId
+          customId: constants.libraryDefaults.defaultJoinButtonCustomId
         }))
     ]
   });
 
-  const filter = (i:MessageComponentInteraction) => i.customId == 'join'; //Maybe add a `customFilter` option in the future
+  const filter = (i:MessageComponentInteraction) => i.customId == constants.libraryDefaults.defaultJoinButtonCustomId; //Maybe add a `customFilter` option in the future
   const collector = channel.createMessageComponentCollector({
     filter,
     time: game.options.queueTime
@@ -37,7 +40,7 @@ const startComponentCollector = async(game:TriviaGame, guild:Guild, channel:Text
   collector.on('collect', async int => {
     if (game.data.players.has(int.user.id)) {
       const inQueueAlready: InteractionReplyOptions = {
-        content: ReplaceOptions(game.options.gameMessages.alreadyJoined, { user: int.user }),
+        content: ReplaceOptions(messages.alreadyJoined, { user: int.user }),
         ephemeral: true
       };
 
@@ -58,7 +61,7 @@ const startComponentCollector = async(game:TriviaGame, guild:Guild, channel:Text
       game.data.players.set(member.id, player);
 
       const queuedNotification: InteractionReplyOptions = {
-        content: ReplaceOptions(game.options.gameMessages.joinedQueue, { user: int.user }),
+        content: ReplaceOptions(messages.joinedQueue, { user: int.user }),
         ephemeral: true
       };
 
@@ -69,20 +72,20 @@ const startComponentCollector = async(game:TriviaGame, guild:Guild, channel:Text
       }
 
       await channel.send({
-        content: ReplaceOptions(game.options.gameMessages.playerJoinedQueue, { user: int.user })
+        content: ReplaceOptions(messages.playerJoinedQueue, { user: int.user })
       });
 
       if (game.data.players.size == game.options.maxPlayerCount) {
         await queueMessage.edit({
           embeds: [
-              ReplaceOptionsEmbed(game.options.gameMessages.gameEmbedReady, { user: int.user })
+              ReplaceOptionsEmbed(messages.gameEmbedStart, { user: int.user })
           ],
           components: [
             new MessageActionRow()
               .addComponents(verifyButton(button, {
                 noLink: true,
                 disabled: true,
-                customId: customId
+                customId: constants.libraryDefaults.defaultJoinButtonCustomId
               }))
           ]
         });
@@ -98,12 +101,17 @@ const startComponentCollector = async(game:TriviaGame, guild:Guild, channel:Text
         content: 'Game failed to meet minimum player requirements'
       });
     } else {
-      console.log(await getQuestions({
-        amount: game.options.questionAmount as number,
-        difficulty: game.options.questionDifficulty as TriviaQuestionDifficulty,
-        type: game.options.questionType as TriviaQuestionType
-      }));
-      // initGame();
+      try {
+        const questions = await getQuestions({
+          amount: game.options.questionAmount as number,
+          difficulty: game.options.questionDifficulty as TriviaQuestionDifficulty,
+          type: game.options.questionType as TriviaQuestionType
+        })
+      
+        await startGame(game, channel, questions);
+      } catch (err) {
+        throw err;
+      }
     }
   }); 
 };
