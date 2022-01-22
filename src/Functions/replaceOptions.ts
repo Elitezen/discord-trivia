@@ -14,8 +14,9 @@ export default function ReplaceOptions(text: string | null, options: ReplaceOpti
 }
 
 export function ReplaceOptionsEmbed(embed: MessageEmbed, options: ReplaceOptionsOptions): MessageEmbed {
-    embed.setDescription(ReplaceOptions(embed.description, options))
+    const newEmbed = new MessageEmbed(embed)
+    .setDescription(ReplaceOptions(embed.description, options))
     .setTitle(ReplaceOptions(embed.title, options))
     //Add replace for fields, author, and footer
-    return embed;
+    return newEmbed;
 }

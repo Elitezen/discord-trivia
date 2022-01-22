@@ -12,7 +12,7 @@ const startGame = async(game:TriviaGame, channel: TextBasedChannel, questions:Tr
     embeds: [embed]
   });
 
-  await wait(5000);
+  await wait(5000); //Bluepaw said this took too long
 
   let i = 0;
   function prepareNextQuestion() {

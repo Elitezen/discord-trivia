@@ -16,6 +16,9 @@ export interface TriviaGameMessages {
   joinButton: MessageButton; //Join button to join game uses `.setDisabled()` to disable it
   baseLeaderboardEmbed: MessageEmbed; //Base leaderboard embed set color, title, description
   baseQuestionEmbed: MessageEmbed; //Question embed you can set the color here
+  correctEmbed: MessageEmbed; //If correct answer use this
+  incorrectEmbed: MessageEmbed; //Else this
+  startButton: MessageButton; //Starts the game button
 }
 
 
