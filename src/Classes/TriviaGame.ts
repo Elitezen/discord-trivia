@@ -1,115 +1,101 @@
-import { Collection, ColorResolvable, CommandInteraction, GuildMember, MessageButton, MessageEmbed } from "discord.js";
-import { Categories } from "easy-trivia";
-import constants from "../../constants";
-import startComponentCollector from "../Functions/startComponentCollector";
-import { TriviaGameData, TriviaGameOptions, TriviaGameOptionsStrict } from "../Typings/interfaces";
+import {
+  Collection,
+  ColorResolvable,
+  CommandInteraction,
+  GuildMember,
+} from "discord.js";
+import startComponentCollector from "../Functions/GameFunctions/startComponentCollector";
+import {
+  TriviaGameData,
+  TriviaGameOptions,
+  TriviaGameOptionsFinal,
+} from "../Typings/interfaces";
 import validateTriviaGameOptions from "../Utility/validateTriviaGameOptions";
 import DiscordTriviaError from "./DiscordTriviaError";
 import TriviaManager from "./TriviaManager";
+import {
+  TriviaCategoryName,
+  TriviaQuestionDifficulty,
+  TriviaQuestionType,
+} from "easy-trivia";
 
 export default class TriviaGame {
   public readonly interaction: CommandInteraction;
   public readonly manager: TriviaManager;
-  public readonly options: TriviaGameOptions;
+  public readonly options: TriviaGameOptionsFinal;
 
   public data: TriviaGameData = {
     hostMember: {} as GuildMember,
-    players: new Collection()
+    players: new Collection(),
   };
 
-  private static readonly BaseColor:ColorResolvable = "BLURPLE";
-
-  public static readonly defaults:TriviaGameOptionsStrict = {
+  public static readonly BaseColor: ColorResolvable = "BLURPLE";
+  public static readonly defaults: TriviaGameOptionsFinal = {
     minPlayerCount: 1,
     maxPlayerCount: 50,
     timePerQuestion: 20_000,
-    triviaCategory: null,
+    triviaCategory: null as unknown as TriviaCategoryName,
     questionAmount: 10,
-    questionDifficulty: null,
-    questionType: null,
+    questionDifficulty: null as unknown as TriviaQuestionDifficulty,
+    questionType: null as unknown as TriviaQuestionType,
     queueTime: 15_000,
-    gameMessages: {
-      gameEmbed: new MessageEmbed().setTitle(`Trivia Game`)
-      .setColor(this.BaseColor)
-      .setDescription('A new trivia game is starting!')
-      .setFooter({
-        text: 'Discord Trivia'
-      }),
-      gameEmbedReady: new MessageEmbed().setTitle(`Trivia Game Started`)
-      .setColor(this.BaseColor)
-      .setDescription('The game has started! All the players have joined.')
-      .setFooter({
-        text: 'Discord Trivia'
-      }),
-      joinedQueue: "You have joined the queue!",
-      playerJoinedQueue: "{{playerMention}} has joined the queue",
-      startMessage: "The game has started waiting for players. Once all the players have joined the game will begin!",
-      alreadyJoined: "You already joined this game!",
-      joinButton: new MessageButton()
-      .setLabel("Join")
-      .setStyle("PRIMARY")
-      .setCustomId(constants.libraryDefaults.defaultJoinButtonCustomId),
-      baseLeaderboardEmbed: new MessageEmbed()
-      .setColor(this.BaseColor)
-      .setTitle("Trivia game leaderboard."),
-      baseQuestionEmbed: new MessageEmbed()
-      .setColor(this.BaseColor),
-      correctEmbed: new MessageEmbed()
-      .setColor(this.BaseColor)
-      .setTitle(`✅ Correct Answer!`)
-      .setDescription(`{{playerMention}} guessed the right answer!`),
-      incorrectEmbed: new MessageEmbed()
-      .setColor(this.BaseColor)
-      .setTitle(`❌ Incorrect Answer!`)
-      .setDescription(`You did not guess the right answer!`),
-      startButton: new MessageButton()
-      .setCustomId(constants.libraryDefaults.defaultStartButtonCustomId)
-      .setStyle("SECONDARY")
-      .setLabel(`Start Game`)
-    }
   };
 
-  constructor(interaction: CommandInteraction, manager: TriviaManager, options?:TriviaGameOptions) {
-    /**
-     * The command interaction for the game.
-     */
+  constructor(
+    interaction: CommandInteraction,
+    manager: TriviaManager,
+    options?: TriviaGameOptions
+  ) {
     this.interaction = interaction;
 
     this.manager = manager;
-    
+
     if (options) {
-      this.options = Object.assign(TriviaGame.defaults, options);
+      this.options = Object.assign(
+        TriviaGame.defaults,
+        options
+      ) as TriviaGameOptionsFinal;
     } else {
       this.options = TriviaGame.defaults;
     }
   }
 
   start(): Promise<void> {
-    return new Promise(async(resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       try {
         validateTriviaGameOptions(this.options);
 
-        if (!this.interaction.guildId) throw new TypeError('guildId returned falsey');
+        if (!this.interaction.guildId)
+          throw new DiscordTriviaError(
+            "Failed to access Guild",
+            "GUILD_FETCH_FAILED"
+          );
 
-        const { options } = this;
+        const guild = await this.interaction.client.guilds.fetch(
+          this.interaction.guildId
+        );
+        const channel = await this.interaction.client.channels.fetch(
+          this.interaction.channelId
+        );
 
-        const guild = await this.interaction.client.guilds
-          .fetch(this.interaction.guildId);
-
-        const channel = await this.interaction.client.channels
-          .fetch(this.interaction.channelId);
-
-        if (channel == null || !channel.isText()) throw new TypeError('channel returned null or is not of type text');
-        if (this.manager.games.has(channel.id)) reject(new DiscordTriviaError(
-          'There can only be one ongoing game per channel',
-          'GAME_IN_PROGRESS'
-        ));
+        if (channel == null || !channel.isText())
+          throw new DiscordTriviaError(
+            "TextChannel is not of type text or cannot be accessed",
+            "TEXT_CHANNEL_INVALID"
+          );
+        if (this.manager.games.has(channel.id))
+          reject(
+            new DiscordTriviaError(
+              "There can only be one ongoing game per channel",
+              "GAME_IN_PROGRESS"
+            )
+          );
 
         this.manager.games.set(channel.id, this);
 
         this.interaction.reply({
-          content: (options.gameMessages || TriviaGame.defaults.gameMessages).startMessage,
-          ephemeral: true
+          content: "Game has been created",
+          ephemeral: true,
         });
 
         await startComponentCollector(this, guild, channel);

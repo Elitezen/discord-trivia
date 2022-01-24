@@ -8,6 +8,7 @@
     "src"
   ],
   "scripts": {
+    "prettier": "prettier -w src/",
     "prepublish": "npm run build",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -23,6 +24,7 @@
   },
   "homepage": "https://github.com/Elitezen/discord-trivia#readme",
   "dependencies": {
+    "canvas": "^2.9.0",
     "discord.js": "^13.6.0",
     "easy-trivia": "^1.1.4"
   },
