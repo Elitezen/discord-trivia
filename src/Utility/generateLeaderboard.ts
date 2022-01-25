@@ -1,7 +1,7 @@
-import { MessageEmbed } from "discord.js";
+import { ColorResolvable, MessageEmbed } from "discord.js";
 import { TriviaPlayer } from "../Typings/interfaces";
 
-function generateLeaderboard(players: TriviaPlayer[]): MessageEmbed {
+function generateLeaderboard(players: TriviaPlayer[], color: ColorResolvable = "BLURPLE"): MessageEmbed {
   const list = players
     .map((p, i) => {
       p.leaderboardPosition.previous = i;
@@ -21,7 +21,7 @@ function generateLeaderboard(players: TriviaPlayer[]): MessageEmbed {
       } ${current} ${change}`;
     })
     .join("\n");
-  const embed = new MessageEmbed().setTitle("Leaderboard").setDescription(list);
+  const embed = new MessageEmbed().setTitle("Leaderboard").setDescription(list).setColor(color);
   return embed;
 }
 

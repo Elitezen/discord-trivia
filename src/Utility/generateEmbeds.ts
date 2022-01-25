@@ -1,24 +1,23 @@
 import { MessageEmbed } from "discord.js";
 import { TriviaCategoryResolvable } from "easy-trivia";
+import constants from "../../constants";
 import TriviaGame from "../Classes/TriviaGame";
 import { TriviaGameOptions } from "../Typings/interfaces";
-
-const placeHolderAuthor =
-  "https://media.discordapp.net/attachments/933214093450555463/933550211517808721/trivia_2.png?width=609&height=609";
+const {
+  icon,
+  libraryDefaults,
+  urls
+} = constants;
 
 const generateEmbeds = {
   gameQueueStart: (game: TriviaGame): MessageEmbed => {
     const { options } = game;
     const embed = new MessageEmbed()
-      .setAuthor({
-        name: "Powered By discord-trivia",
-        iconURL: placeHolderAuthor,
-        url: "https://github.com/Elitezen/discord-trivia",
-      })
+      .setAuthor(libraryDefaults.author)
       .setColor(game.manager.theme)
       .setTitle("Trivia Game Incoming")
       .setDescription("A trivia game has been created!")
-      .setThumbnail(placeHolderAuthor)
+      .setThumbnail(icon)
       .addFields(
         {
           name: "Category",
@@ -38,6 +37,7 @@ const generateEmbeds = {
       )
       .setFooter({
         text: "Use the buttons below to interact",
+        iconURL: "https://cdn.discordapp.com/emojis/935296239858241577.png?size=96&quality=lossless"
       });
 
     return embed;

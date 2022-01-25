@@ -1,11 +1,13 @@
 import { MessageAttachment, MessageEmbed, TextBasedChannel } from "discord.js";
 import { TriviaQuestion } from "easy-trivia";
+import constants from "../../../constants";
 import TriviaGame from "../../Classes/TriviaGame";
 import {
   multipleChoiceButtonRow,
   booleanChoiceButtonRow,
 } from "../../Components/messageButtons";
 import generateLeaderboard from "../../Utility/generateLeaderboard";
+import Leaderboard from "../../Utility/leaderboard";
 import createQuestionImage from "../CanvasFunctions/createQuestionImage";
 
 const letters = ["🇦", "🇧", "🇨", "🇩"];
@@ -13,7 +15,8 @@ const letters = ["🇦", "🇧", "🇨", "🇩"];
 const emitQuestion = async (
   game: TriviaGame,
   channel: TextBasedChannel,
-  q: TriviaQuestion
+  q: TriviaQuestion,
+  counter: Leaderboard
 ) => {
   let correctAnswer: number;
   const choices = q.allAnswers
@@ -25,14 +28,16 @@ const emitQuestion = async (
 
   const buffer = await createQuestionImage(q);
   const embed = new MessageEmbed()
+    .setAuthor(constants.libraryDefaults.author)
     .setThumbnail(
-      "https://media.discordapp.net/attachments/933214093450555463/933550211517808721/trivia_2.png?width=609&height=609"
+      constants.icon
     )
     .setTitle("New Question")
     .setColor(game.manager.theme)
     .setImage("attachment://test.png")
     .setFooter({
       text: "Use the buttons below to answer",
+      iconURL: `https://cdn.discordapp.com/emojis/935296239858241577.png?size=96&quality=lossless`
     });
   const attachment = new MessageAttachment(buffer, "test.png");
   return new Promise(async (resolve, reject) => {
@@ -86,12 +91,17 @@ const emitQuestion = async (
         return;
       } else {
         player.hasAnswered = true;
-        int.reply({
-          content: `**${player.member.displayName}** has locked in!`,
+        await int.reply({
+          content: `**${player.member.displayName}** has locked in their answer!`,
         });
 
+        await int.followUp({
+          content: isCorrect ? `✅ Your answer is correct` : `❌ Your answer is wrong!`,
+          ephemeral: true
+        }).catch(( )=>{ });
+
         if (isCorrect) {
-          player.points++;
+          player.points =+ counter.addCount(player.member.user, isCorrect);
           player.isCorrect = true;
         } else {
           player.isCorrect = false;
@@ -107,7 +117,7 @@ const emitQuestion = async (
           p.isCorrect = false;
         });
 
-      const embed = generateLeaderboard(Array.from(game.data.players.values()));
+      const embed = generateLeaderboard(Array.from(game.data.players.values()), game.manager.theme);
       channel.send({
         embeds: [embed],
       });

@@ -97,6 +97,15 @@ const startComponentCollector = async (
       });
     } else {
       try {
+        //Sometimes it does not edit
+        await queueMessage.edit({
+          components: [
+            new MessageActionRow().addComponents([
+              joinButton.setDisabled(true),
+            ]),
+          ],
+        });
+        
         const questions = await getQuestions({
           amount: game.options.questionAmount as number,
           difficulty: game.options

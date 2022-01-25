@@ -3,6 +3,8 @@ import { TriviaQuestion } from "easy-trivia";
 import TriviaGame from "../../Classes/TriviaGame";
 import { promisify } from "util";
 import emitQuestion from "./emitQuestion";
+import constants from "../../../constants";
+import Leaderboard from "../../Utility/leaderboard";
 
 const wait = promisify(setTimeout);
 
@@ -12,13 +14,13 @@ const startGame = async (
   questions: TriviaQuestion[]
 ) => {
   const embed = new MessageEmbed()
-    .setTitle("Trivia Game Now Starting")
+    .setTitle("Trivia Game Now Starting...")
     .setColor(game.manager.theme)
-    .setDescription("Get Ready!")
+    .setDescription("Get Ready! The game is about to start.")
     .setThumbnail(
-      "https://media.discordapp.net/attachments/933214093450555463/933550211517808721/trivia_2.png?width=609&height=609"
+      constants.icon
     )
-    .setImage("https://c.tenor.com/IrwiUh_zsNUAAAAC/bugs-bunny-race.gif")
+    //.setImage("https://c.tenor.com/IrwiUh_zsNUAAAAC/bugs-bunny-race.gif")
     .setFooter({
       text: "Game will begin momentarily",
     });
@@ -28,12 +30,14 @@ const startGame = async (
 
   await wait(5000); //Bluepaw said this took too long
 
+  const counter = new Leaderboard();
+
   let i = 0;
   function prepareNextQuestion() {
     setTimeout(
       () => {
         const q = questions[i++];
-        emitQuestion(game, channel, q);
+        emitQuestion(game, channel, q, counter);
         prepareNextQuestion();
       },
       i == 0
