@@ -1,66 +1,61 @@
 import {
-  Guild,
   InteractionReplyOptions,
   MessageActionRow,
-  TextBasedChannel,
+  MessageComponentInteraction,
 } from "discord.js";
-import {
-  getQuestions,
-  TriviaQuestionDifficulty,
-  TriviaQuestionType,
-} from "easy-trivia";
 import TriviaGame from "../../Classes/TriviaGame";
-import { joinButton } from "../../Components/messageButtons";
+import { joinButton } from "../../Components/GameComponents/messageButtons";
 import { TriviaPlayer } from "../../Typings/interfaces";
-import ReplaceOptions from "../../Utility/replaceOptions";
 import startGame from "./startGame";
-import generateEmbeds from "../../Utility/generateEmbeds";
 
-const startComponentCollector = async (
-  game: TriviaGame,
-  guild: Guild,
-  channel: TextBasedChannel
-) => {
-  const { messages } = game.manager;
-  const queueMessage = await channel.send({
-    embeds: [generateEmbeds.gameQueueStart(game)],
+async function reply(
+  int: MessageComponentInteraction,
+  obj: InteractionReplyOptions
+) {
+  if (int.replied) {
+    await int.followUp(obj);
+  } else {
+    await int.reply(obj);
+  }
+}
+
+export default async function startComponentCollector(game: TriviaGame) {
+  const queueMessage = await game.channel.send({
+    embeds: [game.embeds.gameQueueStart()],
     components: [new MessageActionRow().addComponents([joinButton])],
   });
 
-  const collector = channel.createMessageComponentCollector({
+  const collector = game.channel.createMessageComponentCollector({
     time: game.options.queueTime,
   });
 
   collector.on("collect", async (int) => {
-    if (game.data.players.has(int.user.id)) {
+    if (game.players.has(int.user.id)) {
       const inQueueAlready: InteractionReplyOptions = {
-        content: ReplaceOptions(messages.alreadyJoined, { user: int.user }),
+        content: "**You are already in the queue**",
         ephemeral: true,
       };
 
-      if (int.replied) {
-        await int.followUp(inQueueAlready);
-      } else {
-        await int.reply(inQueueAlready);
-      }
+      await reply(int, inQueueAlready);
     } else {
-      const member = await guild.members.fetch(int.user.id);
-      if (!member) return; // Throw Error
+      const member = await game.guild.members.fetch(int.user.id);
+      if (!member) {
+        reply(int, {
+          content: "Failed to enter you into the queue, please try again",
+          ephemeral: true,
+        });
 
-      if (int.replied) {
-        await int.followUp({
-          content: "You have joined the queue",
-          ephemeral: true,
-        });
-      } else {
-        await int.reply({
-          content: "You have joined the queue",
-          ephemeral: true,
-        });
+        return;
       }
 
-      const player: TriviaPlayer = {
-        member,
+      const joinedQueue: InteractionReplyOptions = {
+        content: "Successfully joined queue",
+        ephemeral: true,
+      };
+
+      await reply(int, joinedQueue);
+
+      const player: TriviaPlayer = Object.assign(member, {
         points: 0,
         hasAnswered: false,
         isCorrect: false,
@@ -68,48 +63,36 @@ const startComponentCollector = async (
           previous: 0,
           current: 0,
         },
-      };
-
-      game.data.players.set(member.id, player);
-
-      await channel.send({
-        content: ReplaceOptions(messages.playerJoinedQueue, { user: int.user }),
       });
 
-      if (game.data.players.size == game.options.maxPlayerCount) {
-        await queueMessage.edit({
-          components: [
-            new MessageActionRow().addComponents([
-              joinButton.setDisabled(true),
-            ]),
-          ],
-        });
+      game.players.set(player.id, player);
+
+      await game.channel.send({
+        content: `**${player.displayName}** has joined in!`,
+      });
+
+      if (game.players.size === game.options.maxPlayerCount) {
+        collector.stop("Game has reached set maximum player capacity");
       }
     }
   });
 
-  collector.on("end", async (_) => {
-    if (game.data.players.size < (game.options.minPlayerCount as number)) {
-      // game.end();
+  collector.on("end", async () => {
+    if (queueMessage.deletable) {
+      queueMessage.delete().catch((_) => null);
+    }
 
-      await channel.send({
+    if (
+      collector.endReason ||
+      game.players.size >= game.options.minPlayerCount
+    ) {
+      await startGame(game);
+    } else {
+      game.end();
+
+      await game.channel.send({
         content: "Game failed to meet minimum player requirements",
       });
-    } else {
-      try {
-        const questions = await getQuestions({
-          amount: game.options.questionAmount as number,
-          difficulty: game.options
-            .questionDifficulty as TriviaQuestionDifficulty,
-          type: game.options.questionType as TriviaQuestionType,
-        });
-
-        await startGame(game, channel, questions);
-      } catch (err) {
-        throw err;
-      }
     }
   });
-};
-
-export default startComponentCollector;
+}

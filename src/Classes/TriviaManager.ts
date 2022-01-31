@@ -1,45 +1,29 @@
-import { Collection, ColorResolvable, CommandInteraction } from "discord.js";
-import {
-  TriviaGameMessages,
-  TriviaGameMessagesFinal,
-  TriviaGameOptions,
-  TriviaManagerOptions,
-  TriviaManagerOptionsFinal,
-} from "../Typings/interfaces";
+import { Collection, CommandInteraction } from "discord.js";
+import { TriviaGameOptions, TriviaManagerOptions } from "../Typings/interfaces";
 import { TriviaManagerGames } from "../Typings/types";
 import DiscordTriviaError from "./DiscordTriviaError";
 import TriviaGame from "./TriviaGame";
 
 export default class TriviaManager {
-  public readonly theme: ColorResolvable;
-  public readonly games: TriviaManagerGames = new Collection();
-  public readonly messages: TriviaGameMessagesFinal;
-  public static readonly defaults: TriviaManagerOptionsFinal = {
+  public readonly options: TriviaManagerOptions;
+  public readonly games: TriviaManagerGames;
+  public static readonly defaults: TriviaManagerOptions = {
     theme: "BLURPLE",
-    messages: {
-      playerJoinedQueue: "🎮 {{player}} has joined!",
-      alreadyJoined: "✅ You are already in the queue",
-    },
   };
 
   constructor(options?: TriviaManagerOptions) {
-    this.theme = options?.theme ? options.theme : TriviaGame.BaseColor;
-    if (options?.messages) {
-      this.messages = Object.assign(
-        TriviaManager.defaults,
-        options.messages
-      ) as TriviaGameMessagesFinal;
-    } else {
-      this.messages = TriviaManager.defaults.messages;
-    }
+    this.options = options
+      ? Object.assign(TriviaManager.defaults, options)
+      : TriviaManager.defaults;
+    this.games = new Collection();
   }
 
   createGame(interaction: CommandInteraction, options?: TriviaGameOptions) {
-    if (!interaction.isCommand())
-      throw new DiscordTriviaError(
-        "Supplied interaction must be a CommandInteraction",
-        "INVALID_INTERACTION"
-      );
+    if (!interaction.isCommand()) {
+      const { message, header } =
+        DiscordTriviaError.errors.interactionNonCommand;
+      throw new DiscordTriviaError(message, header);
+    }
 
     return new TriviaGame(interaction, this, options);
   }

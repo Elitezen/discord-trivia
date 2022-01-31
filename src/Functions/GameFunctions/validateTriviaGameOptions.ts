@@ -1,5 +1,5 @@
-import DiscordTriviaError from "../Classes/DiscordTriviaError";
-import { TriviaGameOptions } from "../Typings/interfaces";
+import DiscordTriviaError from "../../Classes/DiscordTriviaError";
+import { TriviaGameOptions } from "../../Typings/interfaces";
 
 function validatePlayerCount(
   label: "minPlayerCount" | "maxPlayerCount",
@@ -170,7 +170,9 @@ function validateQueueTime(val: unknown) {
   }
 }
 
-const validateTriviaGameOptions = (obj: TriviaGameOptions): void => {
+function validateGuild(obj: unknown) {}
+
+export default function (obj: TriviaGameOptions): void {
   try {
     validatePlayerCount("minPlayerCount", obj.minPlayerCount);
     validatePlayerCount("maxPlayerCount", obj.maxPlayerCount);
@@ -188,6 +190,4 @@ const validateTriviaGameOptions = (obj: TriviaGameOptions): void => {
   } catch (err) {
     throw err;
   }
-};
-
-export default validateTriviaGameOptions;
+}

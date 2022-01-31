@@ -1,36 +1,40 @@
 import {
   Collection,
-  ColorResolvable,
   CommandInteraction,
+  Guild,
   GuildMember,
+  TextBasedChannel,
 } from "discord.js";
-import startComponentCollector from "../Functions/GameFunctions/startComponentCollector";
-import {
-  TriviaGameData,
-  TriviaGameOptions,
-  TriviaGameOptionsFinal,
-} from "../Typings/interfaces";
-import validateTriviaGameOptions from "../Utility/validateTriviaGameOptions";
-import DiscordTriviaError from "./DiscordTriviaError";
-import TriviaManager from "./TriviaManager";
 import {
   TriviaCategoryName,
   TriviaQuestionDifficulty,
   TriviaQuestionType,
 } from "easy-trivia";
+import TriviaManager from "./TriviaManager";
+import {
+  TriviaGameData,
+  TriviaGameOptions,
+  TriviaGameOptionsStrict,
+} from "../Typings/interfaces";
+import validateTriviaGameOptions from "../Functions/GameFunctions/validateTriviaGameOptions";
+import DiscordTriviaError from "./DiscordTriviaError";
+import validateDiscordStructures from "../Functions/GameFunctions/validateDiscordStructures";
+import startComponentCollector from "../Functions/GameFunctions/startComponentCollector";
+import EmbedGenerator from "./EmbedGenerator";
+import { TriviaPlayers } from "../Typings/types";
 
 export default class TriviaGame {
-  public readonly interaction: CommandInteraction;
   public readonly manager: TriviaManager;
-  public readonly options: TriviaGameOptionsFinal;
+  public readonly interaction: CommandInteraction;
+  public readonly channel: TextBasedChannel;
+  public readonly guild: Guild;
+  public readonly hostMember: GuildMember;
+  public readonly embeds: EmbedGenerator;
 
-  public data: TriviaGameData = {
-    hostMember: {} as GuildMember,
-    players: new Collection(),
-  };
+  public readonly players: TriviaPlayers;
+  public readonly options: TriviaGameOptionsStrict;
 
-  public static readonly BaseColor: ColorResolvable = "BLURPLE";
-  public static readonly defaults: TriviaGameOptionsFinal = {
+  public static readonly defaults: TriviaGameOptionsStrict = {
     minPlayerCount: 1,
     maxPlayerCount: 50,
     timePerQuestion: 20_000,
@@ -46,62 +50,39 @@ export default class TriviaGame {
     manager: TriviaManager,
     options?: TriviaGameOptions
   ) {
-    this.interaction = interaction;
-
     this.manager = manager;
-
-    if (options) {
-      this.options = Object.assign(
-        TriviaGame.defaults,
-        options
-      ) as TriviaGameOptionsFinal;
-    } else {
-      this.options = TriviaGame.defaults;
-    }
+    this.interaction = interaction;
+    this.channel = interaction.channel as TextBasedChannel;
+    this.guild = interaction.guild as Guild;
+    this.players = new Collection();
+    this.hostMember = interaction.member as GuildMember;
+    this.options = options
+      ? Object.assign(TriviaGame.defaults, options)
+      : TriviaGame.defaults;
+    this.embeds = new EmbedGenerator(this);
   }
 
   start(): Promise<void> {
     return new Promise(async (resolve, reject) => {
       try {
+        validateDiscordStructures(this.guild, this.channel);
         validateTriviaGameOptions(this.options);
 
-        if (!this.interaction.guildId)
-          throw new DiscordTriviaError(
-            "Failed to access Guild",
-            "GUILD_FETCH_FAILED"
-          );
+        this.manager.games.set(this.channel.id, this);
 
-        const guild = await this.interaction.client.guilds.fetch(
-          this.interaction.guildId
-        );
-        const channel = await this.interaction.client.channels.fetch(
-          this.interaction.channelId
-        );
-
-        if (channel == null || !channel.isText())
-          throw new DiscordTriviaError(
-            "TextChannel is not of type text or cannot be accessed",
-            "TEXT_CHANNEL_INVALID"
-          );
-        if (this.manager.games.has(channel.id))
-          reject(
-            new DiscordTriviaError(
-              "There can only be one ongoing game per channel",
-              "GAME_IN_PROGRESS"
-            )
-          );
-
-        this.manager.games.set(channel.id, this);
-
-        this.interaction.reply({
-          content: "Game has been created",
+        await this.interaction.reply({
+          content: "Game has been started",
           ephemeral: true,
         });
 
-        await startComponentCollector(this, guild, channel);
+        await startComponentCollector(this);
       } catch (err) {
         reject(err);
       }
     });
+  }
+
+  end() {
+    this.manager.games.delete(this.channel.id);
   }
 }

@@ -1,10 +1,6 @@
-import {
-  MessageActionRow,
-  MessageButton
-} from "discord.js";
-import constants from "../../constants";
+import { MessageActionRow, MessageButton } from "discord.js";
+import constants from "../../../constants";
 
-//Maybe change customId's to something like `discordtrivia_q_1` so then if the user has a `1` button it does not handle it
 const letters = ["🇦", "🇧", "🇨", "🇩"];
 const joinButton = new MessageButton()
   .setCustomId(constants.libraryDefaults.defaultJoinButtonCustomId)
@@ -12,19 +8,19 @@ const joinButton = new MessageButton()
   .setStyle("PRIMARY");
 const a_Button = new MessageButton()
   .setCustomId("0")
-  .setLabel("🇦")
+  .setLabel(letters[0])
   .setStyle("PRIMARY");
 const b_Button = new MessageButton()
   .setCustomId("1")
-  .setLabel("b")
+  .setLabel(letters[1])
   .setStyle("PRIMARY");
 const c_Button = new MessageButton()
   .setCustomId("2")
-  .setLabel("🇨")
+  .setLabel(letters[2])
   .setStyle("PRIMARY");
 const d_Button = new MessageButton()
   .setCustomId("3")
-  .setLabel("🇩")
+  .setLabel(letters[3])
   .setStyle("PRIMARY");
 const multipleChoiceButtonRow = new MessageActionRow().addComponents([
   a_Button,
