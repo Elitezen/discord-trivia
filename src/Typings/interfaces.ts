@@ -10,6 +10,10 @@ import {
   TriviaQuestionType,
 } from "easy-trivia";
 
+export interface CanvasGeneratorOptions {
+  font: string;
+}
+
 export interface DiscordTriviaErrorMessages {
   [key: string]: {
     message: string;

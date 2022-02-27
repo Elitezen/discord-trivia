@@ -3,6 +3,8 @@ import {
   CommandInteraction,
   Guild,
   GuildMember,
+  MessageActionRow,
+  MessageButton,
   TextBasedChannel,
 } from "discord.js";
 import {
@@ -12,16 +14,15 @@ import {
 } from "easy-trivia";
 import TriviaManager from "./TriviaManager";
 import {
-  TriviaGameData,
   TriviaGameOptions,
   TriviaGameOptionsStrict,
 } from "../Typings/interfaces";
 import validateTriviaGameOptions from "../Functions/GameFunctions/validateTriviaGameOptions";
-import DiscordTriviaError from "./DiscordTriviaError";
 import validateDiscordStructures from "../Functions/GameFunctions/validateDiscordStructures";
 import startComponentCollector from "../Functions/GameFunctions/startComponentCollector";
 import EmbedGenerator from "./EmbedGenerator";
 import { TriviaPlayers } from "../Typings/types";
+import CanvasGenerator from "./CanvasGenerator";
 
 export default class TriviaGame {
   public readonly manager: TriviaManager;
@@ -30,6 +31,7 @@ export default class TriviaGame {
   public readonly guild: Guild;
   public readonly hostMember: GuildMember;
   public readonly embeds: EmbedGenerator;
+  public readonly canvas: CanvasGenerator;
 
   public readonly players: TriviaPlayers;
   public readonly options: TriviaGameOptionsStrict;
@@ -60,7 +62,41 @@ export default class TriviaGame {
       ? Object.assign(TriviaGame.defaults, options)
       : TriviaGame.defaults;
     this.embeds = new EmbedGenerator(this);
+    this.canvas = new CanvasGenerator(this);
   }
+
+  static buttonRows = {
+    'multiple': new MessageActionRow()
+      .addComponents([
+        new MessageButton()
+          .setCustomId('0')
+          .setLabel('A')
+          .setStyle('PRIMARY'),
+        new MessageButton()
+          .setCustomId('1')
+          .setLabel('B')
+          .setStyle('PRIMARY'),
+        new MessageButton()
+          .setCustomId('2')
+          .setLabel('C')
+          .setStyle('PRIMARY'),
+        new MessageButton()
+          .setCustomId('3')
+          .setLabel('D')
+          .setStyle('PRIMARY'),
+      ]),
+    'boolean': new MessageActionRow()
+      .addComponents([
+        new MessageButton()
+          .setCustomId('0')
+          .setLabel('TRUE')
+          .setStyle('PRIMARY'),
+        new MessageButton()
+          .setCustomId('1')
+          .setLabel('FALSE')
+          .setStyle('DANGER'),
+      ])
+  };
 
   start(): Promise<void> {
     return new Promise(async (resolve, reject) => {

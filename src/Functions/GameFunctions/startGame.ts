@@ -1,9 +1,11 @@
+import { MessageAttachment } from "discord.js";
 import {
   getQuestions,
   TriviaQuestionDifficulty,
   TriviaQuestionType,
 } from "easy-trivia";
 import TriviaGame from "../../Classes/TriviaGame";
+import startGameLoop from "./startGameLoop";
 
 export default async function startGame(game: TriviaGame) {
   const {
@@ -18,9 +20,9 @@ export default async function startGame(game: TriviaGame) {
     type: type as TriviaQuestionType,
   });
 
-  game.channel.send({
-    embeds: [game.embeds.gameQueueStart()],
+  await game.channel.send({
+    embeds: [game.embeds.gameStart()],
   });
 
-  console.log("Procedure End");
+  await startGameLoop(game, questions);
 }
