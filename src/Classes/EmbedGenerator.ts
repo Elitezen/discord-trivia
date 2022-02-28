@@ -83,39 +83,40 @@ export default class EmbedGenerator {
       });
   }
 
-  leaderboardUpdate(game:TriviaGame) {
+  leaderboardUpdate(game: TriviaGame) {
     return new MessageEmbed()
-      .setTitle('Leaderboard Here')
-      .setDescription('...')
+      .setTitle("Leaderboard Here")
+      .setDescription("...");
   }
 
-  question(question:TriviaQuestion) {
-    return new MessageEmbed()
-      .setTitle('New Question')
-      .addFields(
-        {
-          name: 'Category',
-          value: question.category,
-          inline: true
-        },
-        {
-          name: 'Difficulty',
-          value: question.difficulty,
-          inline: true
-        },
-        {
-          name: 'Question',
-          value: question.value,
-        },
-        {
-          name: 'Choices',
-          value: question.allAnswers
-            .map((q, i) => {
-              const choices = question.type == 'multiple' ? ['A', 'B', 'C', 'D'] : ['True', 'False'];
-              return choices[i] + q
-            })
-            .join('\n')
-        }
-      )
+  question(question: TriviaQuestion) {
+    return new MessageEmbed().setTitle("New Question").addFields(
+      {
+        name: "Category",
+        value: question.category,
+        inline: true,
+      },
+      {
+        name: "Difficulty",
+        value: question.difficulty,
+        inline: true,
+      },
+      {
+        name: "Question",
+        value: question.value,
+      },
+      {
+        name: "Choices",
+        value: question.allAnswers
+          .map((q, i) => {
+            const choices =
+              question.type == "multiple"
+                ? ["A", "B", "C", "D"]
+                : ["True", "False"];
+            return choices[i] + q;
+          })
+          .join("\n"),
+      }
+    );
   }
 }

@@ -38,13 +38,16 @@ export default class CanvasGenerator {
     );
   }
 
-  private setTitle(title:string, alignment: 'left' | 'center' | 'right' = 'center') {
+  private setTitle(
+    title: string,
+    alignment: "left" | "center" | "right" = "center"
+  ) {
     this.context.textAlign = alignment;
-    this.context.fillStyle = 'white';
+    this.context.fillStyle = "white";
     this.context.font = `90px ${CanvasGenerator.defaults.font}`;
-    
+
     const textWidth = this.context.measureText(title).width;
-    const center = (CanvasGenerator.dimensions.width / 2) - (textWidth / 2);
+    const center = CanvasGenerator.dimensions.width / 2 - textWidth / 2;
 
     this.context.fillText(title, center, CanvasGenerator.canvasPadding);
   }
