@@ -1,5 +1,6 @@
 import { ColorResolvable, MessageEmbed } from "discord.js";
 import { TriviaQuestion } from "easy-trivia";
+import embedConstants from "../../embedConstants";
 import TriviaGame from "../Classes/TriviaGame";
 
 export default class EmbedGenerator {
@@ -14,15 +15,10 @@ export default class EmbedGenerator {
   gameQueueStart() {
     return new MessageEmbed()
       .setTitle(
-        `${this.game.hostMember.displayName} is Preparing a Trivia Game!`
+        `${this.game.hostMember.displayName} is starting a Trivia Game!`
       )
       .setColor(this.theme)
-      .setAuthor({
-        name: "Powered by disord-trivia",
-        iconURL:
-          "https://media.discordapp.net/attachments/933214093450555463/933550211517808721/trivia_2.png",
-        url: "https://github.com/Elitezen/discord-trivia",
-      })
+      .setAuthor(embedConstants.Author)
       .addFields(
         {
           name: "Category",
@@ -43,11 +39,7 @@ export default class EmbedGenerator {
       .setImage(
         "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Example_image.svg/600px-Example_image.svg.png"
       )
-      .setFooter({
-        text: "Use the buttons below to interact",
-        iconURL:
-          "https://cdn.discordapp.com/emojis/935296239858241577.png?size=96&quality=lossless",
-      });
+      .setFooter(embedConstants.InteractWithButtons);
   }
 
   gameStart() {
@@ -62,35 +54,42 @@ export default class EmbedGenerator {
       remainingPlayers = this.game.players.size - 10;
     } else {
       playersList = Array.from(this.game.players.values())
-        .map((member) => `**${member.displayName}**`)
+        .map((member) => `${member.displayName}`)
         .join("\n");
     }
 
     return new MessageEmbed()
-      .setTitle("The Trivia Game is now Starting!")
+      .setTitle("Trivia Game is now starting!")
       .setColor(this.theme)
       .setDescription(
-        `Players:\n${playersList} ${
-          remainingPlayers
-            ? `\n...\nAnd ${remainingPlayers.toString()} more!`
-            : ""
+        `**Players:**\n${playersList}${remainingPlayers
+          ? `\n...\nAnd ${remainingPlayers.toString()} more!`
+          : ""
         }`
       )
-      .setFooter({
-        text: "Use the buttons below to interact",
-        iconURL:
-          "https://cdn.discordapp.com/emojis/935296239858241577.png?size=96&quality=lossless",
-      });
+      .setAuthor(embedConstants.Author)
+      .setFooter(embedConstants.InteractWithButtons);
   }
 
-  leaderboardUpdate(game:TriviaGame) {
+  leaderboardUpdate(game: TriviaGame) {
     return new MessageEmbed()
-      .setTitle('Leaderboard Here')
-      .setDescription('...')
+      .setAuthor(embedConstants.Author)
+      .setTitle('Leaderboard')
+      .setColor(this.theme)
+      .addFields(
+        game.players.sort(e => e.leaderboardPosition.current)
+          .map(e => {
+            return {
+              name: '#' + (e.leaderboardPosition.current + 1).toString(),
+              value: e.toString()
+            }
+          })
+      );
   }
 
-  question(question:TriviaQuestion) {
+  question(question: TriviaQuestion) {
     return new MessageEmbed()
+      .setAuthor(embedConstants.Author)
       .setTitle('New Question')
       .addFields(
         {
@@ -112,10 +111,14 @@ export default class EmbedGenerator {
           value: question.allAnswers
             .map((q, i) => {
               const choices = question.type == 'multiple' ? ['A', 'B', 'C', 'D'] : ['True', 'False'];
-              return choices[i] + q
+              const choice = choices[i];
+              //@ts-expect-error //TS will think that it could still be a boolean question.
+              return (question.type == "multiple" ? `${embedConstants.Emojis[choice]} ` : "") + (question.type == "boolean" ? choices[i] : "") + (question.type == "boolean" ? "" : q);
             })
             .join('\n')
         }
       )
+      .setColor(this.theme)
+      .setFooter(embedConstants.InteractWithButtons)
   }
 }

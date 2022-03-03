@@ -25,7 +25,7 @@ export default async function emitQuestion(game:TriviaGame, question:TriviaQuest
         player.points++;
       }
 
-      await game.channel.send({
+      await i.reply({
         content: `**${member.displayName || i.user.username}** has locked in!`
       });
     });

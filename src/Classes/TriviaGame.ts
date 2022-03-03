@@ -89,11 +89,11 @@ export default class TriviaGame {
       .addComponents([
         new MessageButton()
           .setCustomId('0')
-          .setLabel('TRUE')
-          .setStyle('PRIMARY'),
+          .setLabel('True')
+          .setStyle('SUCCESS'),
         new MessageButton()
           .setCustomId('1')
-          .setLabel('FALSE')
+          .setLabel('False')
           .setStyle('DANGER'),
       ])
   };
@@ -107,7 +107,7 @@ export default class TriviaGame {
         this.manager.games.set(this.channel.id, this);
 
         await this.interaction.reply({
-          content: "Game has been started",
+          content: "Game has started.",
           ephemeral: true,
         });
 

@@ -68,7 +68,7 @@ export default async function startComponentCollector(game: TriviaGame) {
       game.players.set(player.id, player);
 
       await game.channel.send({
-        content: `**${player.displayName}** has joined in!`,
+        content: `**${player.toString()}** has joined!`, //Mention the player so users can see the player's profile
       });
 
       if (game.players.size === game.options.maxPlayerCount) {
