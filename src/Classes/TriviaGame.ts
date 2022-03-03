@@ -85,9 +85,36 @@ export default class TriviaGame {
   }
 
   static buttonRows = {
-    boolean: buttonRowChoicesBoolean,
-    multiple: buttonRowChoicesMultiple,
-    queue: buttonRowQueue,
+    'multiple': new MessageActionRow()
+      .addComponents([
+        new MessageButton()
+          .setCustomId('0')
+          .setLabel('A')
+          .setStyle('PRIMARY'),
+        new MessageButton()
+          .setCustomId('1')
+          .setLabel('B')
+          .setStyle('PRIMARY'),
+        new MessageButton()
+          .setCustomId('2')
+          .setLabel('C')
+          .setStyle('PRIMARY'),
+        new MessageButton()
+          .setCustomId('3')
+          .setLabel('D')
+          .setStyle('PRIMARY'),
+      ]),
+    'boolean': new MessageActionRow()
+      .addComponents([
+        new MessageButton()
+          .setCustomId('0')
+          .setLabel('True')
+          .setStyle('SUCCESS'),
+        new MessageButton()
+          .setCustomId('1')
+          .setLabel('False')
+          .setStyle('DANGER'),
+      ])
   };
 
   start(): Promise<void> {
@@ -99,7 +126,7 @@ export default class TriviaGame {
         this.manager.games.set(this.channel.id, this);
 
         await this.interaction.reply({
-          content: "Game has been started",
+          content: "Game has started.",
           ephemeral: true,
         });
 
