@@ -36,9 +36,7 @@ export default class EmbedGenerator {
           inline: true,
         }
       )
-      .setImage(
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Example_image.svg/600px-Example_image.svg.png"
-      )
+      //.setImage("https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Example_image.svg/600px-Example_image.svg.png")
       .setFooter(embedConstants.InteractWithButtons);
   }
 
@@ -54,7 +52,7 @@ export default class EmbedGenerator {
       remainingPlayers = this.game.players.size - 10;
     } else {
       playersList = Array.from(this.game.players.values())
-        .map((member) => `${member.displayName}`)
+        .map((member) => `• ${member.displayName}`)
         .join("\n");
     }
 
@@ -67,8 +65,7 @@ export default class EmbedGenerator {
           : ""
         }`
       )
-      .setAuthor(embedConstants.Author)
-      .setFooter(embedConstants.InteractWithButtons);
+      .setAuthor(embedConstants.Author);
   }
 
   leaderboardUpdate(game: TriviaGame) {
@@ -78,12 +75,10 @@ export default class EmbedGenerator {
       .setColor(this.theme)
       .addFields(
         game.players.sort(e => e.leaderboardPosition.current)
-          .map(e => {
-            return {
-              name: '#' + (e.leaderboardPosition.current + 1).toString(),
-              value: e.toString()
-            }
-          })
+          .map(e => ({
+            name: '#' + (e.leaderboardPosition.current + 1).toString() + ` ${e.displayName}`,
+            value: e.points.toString() + ` ${e.points <= 1 ? "point" : "points"}`
+          }))
       );
   }
 
