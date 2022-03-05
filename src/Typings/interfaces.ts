@@ -49,6 +49,10 @@ export interface TriviaGameOptionsStrict {
 }
 
 export interface TriviaManagerOptions {
+  theme?: ColorResolvable;
+}
+
+export interface TriviaManagerOptionsStrict {
   theme: ColorResolvable;
 }
 
