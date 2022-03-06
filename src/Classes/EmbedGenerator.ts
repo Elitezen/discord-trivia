@@ -54,7 +54,7 @@ export default class EmbedGenerator {
       remainingPlayers = this.game.players.size - 10;
     } else {
       playersList = Array.from(this.game.players.values())
-        .map((member) => `${member.displayName}`)
+        .map((member) => `• ${member.displayName}`)
         .join("\n");
     }
 
@@ -81,7 +81,6 @@ export default class EmbedGenerator {
         Array.from(this.game.leaderboard)
           .map((entry, i) => {
             return {
-              name: `#${i + 1}`,
               value: `${entry[1].toString()}  ${entry[1].points}  ${entry[1].isCorrect ? '✅' : '❌'}`,
             };
           })

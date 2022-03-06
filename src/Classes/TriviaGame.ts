@@ -28,6 +28,7 @@ import {
   buttonRowChoicesBoolean,
   buttonRowChoicesMultiple,
   buttonRowQueue,
+  Disabled,
 } from "../Components/messageActionRows";
 import { promisify } from "util";
 
@@ -95,6 +96,10 @@ export default class TriviaGame {
     multiple: buttonRowChoicesMultiple,
     boolean: buttonRowChoicesBoolean,
     queue: buttonRowQueue,
+    disabled: {
+      boolean: Disabled.buttonRowChoicesBooleanDisabled,
+      multiple: Disabled.buttonRowChoicesMultipleDisabled
+    }
   };
 
   start(): Promise<void> {
@@ -166,8 +171,9 @@ export default class TriviaGame {
     return new Promise(async (resolve, reject) => {
       if (this.state == "ENDED") return;
       const emissionTime = performance.now();
+      let FirstCorrect: null | TriviaPlayer = null;
 
-      await this.channel.send({
+      const QMessage = await this.channel.send({
         embeds: [this.embeds.question(question)],
         components: [TriviaGame.buttonRows[question.type]],
       });
@@ -199,6 +205,8 @@ export default class TriviaGame {
         } else if (
           question.checkAnswer(question.allAnswers[Number(i.customId)])
         ) {
+          if(FirstCorrect == null) FirstCorrect = player;
+
           const answerTime = performance.now();
           const timeElapsed = answerTime - emissionTime;
 
@@ -226,6 +234,12 @@ export default class TriviaGame {
         });
 
         this.prepareNextRound();
+        
+        QMessage.edit({
+          embeds: [this.embeds.question(question).addField(`Correct`, `${question.correctAnswer} ${FirstCorrect != null ? `(${FirstCorrect.toString()})` : ""}`)],
+          components: [TriviaGame.buttonRows.disabled[question.type]],
+        });
+        
         await wait(5000);
         resolve();
       });
