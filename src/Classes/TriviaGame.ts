@@ -22,7 +22,7 @@ import {
   TriviaPlayer,
 } from "../Typings/interfaces";
 import EmbedGenerator from "./EmbedGenerator";
-import { TriviaPlayers } from "../Typings/types";
+import { TriviaGameState, TriviaPlayers } from "../Typings/types";
 import CanvasGenerator from "./CanvasGenerator";
 import {
   buttonRowChoicesBoolean,
@@ -53,6 +53,7 @@ export default class TriviaGame {
   private readonly canvas: CanvasGenerator;
   public readonly players: TriviaPlayers;
   public readonly options: TriviaGameOptionsStrict;
+  public state: TriviaGameState;
   private questions: TriviaQuestion[] = [];
 
   public static readonly defaults: TriviaGameOptionsStrict = {
@@ -64,6 +65,8 @@ export default class TriviaGame {
     questionDifficulty: null as unknown as TriviaQuestionDifficulty,
     questionType: null as unknown as TriviaQuestionType,
     queueTime: 15_000,
+    minPoints: 1,
+    maxPoints: 100,
   };
 
   constructor(
@@ -80,45 +83,21 @@ export default class TriviaGame {
     this.options = options
       ? Object.assign(TriviaGame.defaults, options)
       : TriviaGame.defaults;
+    this.state = "PENDING";
     this.embeds = new EmbedGenerator(this);
     this.canvas = new CanvasGenerator(this);
   }
 
   static buttonRows = {
-    'multiple': new MessageActionRow()
-      .addComponents([
-        new MessageButton()
-          .setCustomId('0')
-          .setLabel('A')
-          .setStyle('PRIMARY'),
-        new MessageButton()
-          .setCustomId('1')
-          .setLabel('B')
-          .setStyle('PRIMARY'),
-        new MessageButton()
-          .setCustomId('2')
-          .setLabel('C')
-          .setStyle('PRIMARY'),
-        new MessageButton()
-          .setCustomId('3')
-          .setLabel('D')
-          .setStyle('PRIMARY'),
-      ]),
-    'boolean': new MessageActionRow()
-      .addComponents([
-        new MessageButton()
-          .setCustomId('0')
-          .setLabel('True')
-          .setStyle('SUCCESS'),
-        new MessageButton()
-          .setCustomId('1')
-          .setLabel('False')
-          .setStyle('DANGER'),
-      ])
+    multiple: buttonRowChoicesMultiple,
+    boolean: buttonRowChoicesBoolean,
+    queue: buttonRowQueue,
   };
 
   start(): Promise<void> {
     return new Promise(async (resolve, reject) => {
+      if (this.state == "ENDED") return;
+
       try {
         this.manager.validator.validateDiscordStructures(this);
         this.manager.validator.validateGameOptions(this.options);
@@ -126,7 +105,7 @@ export default class TriviaGame {
         this.manager.games.set(this.channel.id, this);
 
         await this.interaction.reply({
-          content: "Game has started.",
+          content: "Game has started. Click the join button to enter",
           ephemeral: true,
         });
 
@@ -139,10 +118,13 @@ export default class TriviaGame {
 
   end() {
     this.manager.games.delete(this.channel.id);
+    this.state = "ENDED";
   }
 
   private async beginGameLoop() {
     for await (const question of this.questions) {
+      if (this.state == "ENDED") return;
+
       await this.channel.send({
         content: "**Preparing the next question...**",
       });
@@ -150,10 +132,33 @@ export default class TriviaGame {
       await wait(5000);
       await this.emitQuestion(question);
     }
+
+    await this.channel.send({
+      embeds: [this.embeds.finalLeaderboard()],
+    });
+    this.end();
+  }
+
+  private async clearCurrentRoundData() {
+    this.players.forEach((p) => (p.hasAnswered = false));
+  }
+
+  private calculatePoints(timePassed: number) {
+    const { timePerQuestion, maxPoints, minPoints } = this.options;
+    const timeProportion = Number(
+      (timePassed / timePerQuestion).toPrecision(2)
+    );
+    const points =
+      maxPoints - Math.ceil((maxPoints - minPoints) * timeProportion);
+
+    return points;
   }
 
   private async emitQuestion(question: TriviaQuestion): Promise<void> {
     return new Promise(async (resolve, reject) => {
+      if (this.state == "ENDED") return;
+      const emissionTime = performance.now();
+
       await this.channel.send({
         embeds: [this.embeds.question(question)],
         components: [TriviaGame.buttonRows[question.type]],
@@ -168,25 +173,41 @@ export default class TriviaGame {
       });
 
       collector.on("collect", async (i) => {
+        if (this.state == "ENDED") return;
+
         const player = this.players.get(i.user.id)!;
         const member = await this.guild.members.fetch(i.user.id);
 
-        if (question.checkAnswer(question.allAnswers[Number(i.customId)])) {
-          player.points++;
+        if (player.hasAnswered) {
+          return void (await reply(i, {
+            content: "**You have already chosen an answer**",
+            ephemeral: true,
+          }));
+        } else if (
+          question.checkAnswer(question.allAnswers[Number(i.customId)])
+        ) {
+          const answerTime = performance.now();
+          const timeElapsed = answerTime - emissionTime;
+
+          player.points += this.calculatePoints(timeElapsed);
+          // Show points in LB
         }
 
-        await this.channel.send({
-          content: `**${
-            member.displayName || i.user.username
-          }** has locked in!`,
+        await reply(i, {
+          content: `**${member.toString()}** has locked in!`,
         });
+
+        player.hasAnswered = true;
       });
 
       collector.on("end", async () => {
+        if (this.state == "ENDED") return;
+
         await this.channel.send({
-          embeds: [this.embeds.leaderboardUpdate(this)],
+          embeds: [this.embeds.leaderboardUpdate()],
         });
 
+        this.clearCurrentRoundData();
         await wait(5000);
         resolve();
       });
@@ -194,6 +215,8 @@ export default class TriviaGame {
   }
 
   private async initializeGame() {
+    if (this.state == "ENDED") return;
+
     const {
       questionAmount: amount,
       questionDifficulty: difficulty,
@@ -214,6 +237,8 @@ export default class TriviaGame {
   }
 
   private async startComponentCollector() {
+    this.state = "QUEUE";
+
     const queueMessage = await this.channel.send({
       embeds: [this.embeds.gameQueueStart()],
       components: [TriviaGame.buttonRows.queue],
@@ -224,6 +249,7 @@ export default class TriviaGame {
     });
 
     collector.on("collect", async (int) => {
+      if (this.state == "ENDED") return;
       if (this.players.has(int.user.id)) {
         const inQueueAlready: InteractionReplyOptions = {
           content: "**You are already in the queue**",
@@ -262,7 +288,7 @@ export default class TriviaGame {
         this.players.set(player.id, player);
 
         await this.channel.send({
-          content: `**${player.displayName}** has joined in!`,
+          content: `**${player.toString()}** has joined in!`,
         });
 
         if (this.players.size === this.options.maxPlayerCount) {
@@ -272,6 +298,7 @@ export default class TriviaGame {
     });
 
     collector.on("end", async () => {
+      if (this.state == "ENDED") return;
       if (queueMessage.deletable) {
         queueMessage.delete().catch((_) => null);
       }

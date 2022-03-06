@@ -1,6 +1,6 @@
 import { ColorResolvable, MessageEmbed } from "discord.js";
 import { TriviaQuestion } from "easy-trivia";
-import embedConstants from "../../embedConstants";
+import constants from "../../constants";
 import TriviaGame from "../Classes/TriviaGame";
 
 export default class EmbedGenerator {
@@ -18,7 +18,7 @@ export default class EmbedGenerator {
         `${this.game.hostMember.displayName} is starting a Trivia Game!`
       )
       .setColor(this.theme)
-      .setAuthor(embedConstants.Author)
+      .setAuthor(constants.embeds.author)
       .addFields(
         {
           name: "Category",
@@ -36,8 +36,10 @@ export default class EmbedGenerator {
           inline: true,
         }
       )
-      //.setImage("https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Example_image.svg/600px-Example_image.svg.png")
-      .setFooter(embedConstants.InteractWithButtons);
+      .setImage(
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Example_image.svg/600px-Example_image.svg.png"
+      )
+      .setFooter(constants.embeds.interactWithButtons);
   }
 
   gameStart() {
@@ -60,60 +62,88 @@ export default class EmbedGenerator {
       .setTitle("Trivia Game is now starting!")
       .setColor(this.theme)
       .setDescription(
-        `**Players:**\n${playersList}${remainingPlayers
-          ? `\n...\nAnd ${remainingPlayers.toString()} more!`
-          : ""
+        `**Players:**\n${playersList}${
+          remainingPlayers
+            ? `\n...\nAnd ${remainingPlayers.toString()} more!`
+            : ""
         }`
       )
-      .setAuthor(embedConstants.Author);
+      .setAuthor(constants.embeds.author)
+      .setFooter(constants.embeds.interactWithButtons);
   }
 
-  leaderboardUpdate(game: TriviaGame) {
+  leaderboardUpdate() {
     return new MessageEmbed()
-      .setAuthor(embedConstants.Author)
-      .setTitle('Leaderboard')
+      .setAuthor(constants.embeds.author)
+      .setTitle("Leaderboard")
       .setColor(this.theme)
       .addFields(
-        game.players.sort(e => e.leaderboardPosition.current)
-          .map(e => ({
-            name: '#' + (e.leaderboardPosition.current + 1).toString() + ` ${e.displayName}`,
-            value: e.points.toString() + ` ${e.points <= 1 ? "point" : "points"}`
-          }))
+        this.game.players
+          .sort((e) => e.leaderboardPosition.current)
+          .map((e) => {
+            return {
+              name: "#" + (e.leaderboardPosition.current + 1).toString() + " " + e.displayName,
+              value: `${e.points} ${e.points <= 1 ? "point" : "points"}`,
+            };
+          })
       );
   }
 
-  question(question: TriviaQuestion) {
+  finalLeaderboard() {
+    const { emojis } = constants.embeds;
+    const medals = [
+      emojis('GOLD'),
+      emojis('SILVER'),
+      emojis('BRONZE')
+    ];
+
+    const podium = this.game.players
+      .sort((e) => e.leaderboardPosition.current)
+      .first(3)
+      .map((m, i) => `${medals[i]} ${m.toString()} ${m.points}`)
+      .join("\n");
     return new MessageEmbed()
-      .setAuthor(embedConstants.Author)
-      .setTitle('New Question')
+      .setAuthor(constants.embeds.author)
+      .setTitle("Game Has Ended")
+      .setColor(this.theme)
+      .setDescription(podium)
+      .setFooter({
+        text: "Thanks for playing",
+      });
+  }
+
+  question(question: TriviaQuestion) {
+    const embed = new MessageEmbed()
+      .setAuthor(constants.embeds.author)
+      .setTitle("New Question")
       .addFields(
         {
-          name: 'Category',
+          name: "Category",
           value: question.category,
-          inline: true
+          inline: true,
         },
         {
-          name: 'Difficulty',
+          name: "Difficulty",
           value: question.difficulty,
-          inline: true
+          inline: true,
         },
         {
-          name: 'Question',
+          name: "Question",
           value: question.value,
-        },
-        {
-          name: 'Choices',
-          value: question.allAnswers
-            .map((q, i) => {
-              const choices = question.type == 'multiple' ? ['A', 'B', 'C', 'D'] : ['True', 'False'];
-              const choice = choices[i];
-              //@ts-expect-error //TS will think that it could still be a boolean question.
-              return (question.type == "multiple" ? `${embedConstants.Emojis[choice]} ` : "") + (question.type == "boolean" ? choices[i] : "") + (question.type == "boolean" ? "" : q);
-            })
-            .join('\n')
         }
       )
       .setColor(this.theme)
-      .setFooter(embedConstants.InteractWithButtons)
+      .setFooter(constants.embeds.interactWithButtons);
+    if (question.type == 'multiple') {
+      const choices = question.allAnswers
+        .map((ans, i) => {
+          const symbol = constants.embeds.emojis(['A', 'B', 'C', 'D'][i]);
+          return `${symbol} ${ans}`;
+        }).join('\n');
+
+      embed.addField('Choices', choices);
+    }
+
+    return embed;
   }
 }
