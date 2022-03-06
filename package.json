@@ -10,6 +10,7 @@
   "scripts": {
     "prettier": "prettier -w src/",
     "prepublish": "npm run build",
+    "beta": "npm i && npm run build",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
