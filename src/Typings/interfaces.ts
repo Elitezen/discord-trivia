@@ -64,8 +64,4 @@ export interface TriviaPlayer extends GuildMember {
   points: number;
   hasAnswered: boolean;
   isCorrect: boolean;
-  leaderboardPosition: {
-    previous: number;
-    current: number;
-  };
 }

@@ -23,7 +23,7 @@ import {
 } from "../Typings/interfaces";
 import EmbedGenerator from "./EmbedGenerator";
 import { TriviaGameState, TriviaPlayers } from "../Typings/types";
-import CanvasGenerator from "./CanvasGenerator";
+// import CanvasGenerator from "./CanvasGenerator";
 import {
   buttonRowChoicesBoolean,
   buttonRowChoicesMultiple,
@@ -50,11 +50,12 @@ export default class TriviaGame {
   public readonly guild: Guild;
   public readonly hostMember: GuildMember;
   private readonly embeds: EmbedGenerator;
-  private readonly canvas: CanvasGenerator;
+  // private readonly canvas: CanvasGenerator;
   public readonly players: TriviaPlayers;
   public readonly options: TriviaGameOptionsStrict;
   public state: TriviaGameState;
-  private questions: TriviaQuestion[] = [];
+  private questions: TriviaQuestion[];
+  public leaderboard: TriviaPlayers;
 
   public static readonly defaults: TriviaGameOptionsStrict = {
     minPlayerCount: 1,
@@ -79,13 +80,15 @@ export default class TriviaGame {
     this.channel = interaction.channel as TextBasedChannel;
     this.guild = interaction.guild as Guild;
     this.players = new Collection();
+    this.questions = [];
     this.hostMember = interaction.member as GuildMember;
+    this.leaderboard = new Collection();
     this.options = options
       ? Object.assign(TriviaGame.defaults, options)
       : TriviaGame.defaults;
     this.state = "PENDING";
     this.embeds = new EmbedGenerator(this);
-    this.canvas = new CanvasGenerator(this);
+    // this.canvas = new CanvasGenerator(this);
   }
 
   static buttonRows = {
@@ -139,8 +142,13 @@ export default class TriviaGame {
     this.end();
   }
 
-  private async clearCurrentRoundData() {
-    this.players.forEach((p) => (p.hasAnswered = false));
+  private async prepareNextRound() {
+    this.players.forEach((p) => {
+      (p.hasAnswered = false)
+      p.isCorrect = false;
+    });
+
+    this.updateLeaderboard();
   }
 
   private calculatePoints(timePassed: number) {
@@ -178,7 +186,12 @@ export default class TriviaGame {
         const player = this.players.get(i.user.id)!;
         const member = await this.guild.members.fetch(i.user.id);
 
-        if (player.hasAnswered) {
+        if (!player) {
+          return void reply(i, {
+            content: 'You are not apart of this match',
+            ephemeral: true
+          });
+        } else if (player.hasAnswered) {
           return void (await reply(i, {
             content: "**You have already chosen an answer**",
             ephemeral: true,
@@ -190,11 +203,16 @@ export default class TriviaGame {
           const timeElapsed = answerTime - emissionTime;
 
           player.points += this.calculatePoints(timeElapsed);
-          // Show points in LB
+          player.isCorrect = true;
         }
 
         await reply(i, {
-          content: `**${member.toString()}** has locked in!`,
+          content: 'Your answer has been locked in',
+          ephemeral: true
+        });
+
+        await this.channel.send({
+          content: `**${member.displayName}** has locked in!`,
         });
 
         player.hasAnswered = true;
@@ -207,7 +225,7 @@ export default class TriviaGame {
           embeds: [this.embeds.leaderboardUpdate()],
         });
 
-        this.clearCurrentRoundData();
+        this.prepareNextRound();
         await wait(5000);
         resolve();
       });
@@ -221,12 +239,16 @@ export default class TriviaGame {
       questionAmount: amount,
       questionDifficulty: difficulty,
       questionType: type,
+      triviaCategory: category,
     } = this.options;
+
+    this.updateLeaderboard();
 
     this.questions = await getQuestions({
       amount,
-      difficulty: difficulty as TriviaQuestionDifficulty,
-      type: type as TriviaQuestionType,
+      difficulty: difficulty!,
+      type: type!,
+      category: category!,
     });
 
     await this.channel.send({
@@ -278,17 +300,13 @@ export default class TriviaGame {
         const player: TriviaPlayer = Object.assign(member, {
           points: 0,
           hasAnswered: false,
-          isCorrect: false,
-          leaderboardPosition: {
-            previous: 0,
-            current: 0,
-          },
+          isCorrect: false
         });
 
         this.players.set(player.id, player);
 
         await this.channel.send({
-          content: `**${player.toString()}** has joined in!`,
+          content: `**${player.displayName}** has joined in!`,
         });
 
         if (this.players.size === this.options.maxPlayerCount) {
@@ -315,6 +333,12 @@ export default class TriviaGame {
           content: "Game failed to meet minimum player requirements",
         });
       }
+    });
+  }
+
+  private updateLeaderboard() {
+    this.leaderboard = this.players.sort((a, b) => {
+      return a.points - b.points;
     });
   }
 }
