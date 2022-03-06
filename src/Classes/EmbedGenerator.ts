@@ -78,12 +78,10 @@ export default class EmbedGenerator {
       .setTitle("Leaderboard")
       .setColor(this.theme)
       .addFields(
-        this.game.players
-          .sort((e) => e.leaderboardPosition.current)
-          .map((e) => {
+        Array.from(this.game.leaderboard)
+          .map((entry, i) => {
             return {
-              name: "#" + (e.leaderboardPosition.current + 1).toString() + " " + e.displayName,
-              value: `${e.points} ${e.points <= 1 ? "point" : "points"}`,
+              value: `${entry[1].toString()}  ${entry[1].points}  ${entry[1].isCorrect ? '✅' : '❌'}`,
             };
           })
       );
@@ -97,8 +95,7 @@ export default class EmbedGenerator {
       emojis('BRONZE')
     ];
 
-    const podium = this.game.players
-      .sort((e) => e.leaderboardPosition.current)
+    const podium = this.game.leaderboard
       .first(3)
       .map((m, i) => `${medals[i]} ${m.toString()} ${m.points}`)
       .join("\n");
