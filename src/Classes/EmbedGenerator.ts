@@ -113,7 +113,7 @@ export default class EmbedGenerator {
   }
 
   question(question: TriviaQuestion) {
-    return new MessageEmbed()
+    const embed = new MessageEmbed()
       .setAuthor(constants.embeds.author)
       .setTitle("New Question")
       .addFields(
@@ -130,24 +130,20 @@ export default class EmbedGenerator {
         {
           name: "Question",
           value: question.value,
-        },
-        {
-          name: "Choices",
-          value: question.allAnswers
-            .map((ans, i) => {
-              const choices =
-                question.type == "multiple"
-                  ? ["A", "B", "C", "D"].map(
-                      (str) => `${constants.embeds.emojis(str)} ${ans}`
-                    )
-                  : ["True", "False"].join("\n");
-
-              return choices;
-            })
-            .join("\n"),
         }
       )
       .setColor(this.theme)
       .setFooter(constants.embeds.interactWithButtons);
+    if (question.type == 'multiple') {
+      const choices = question.allAnswers
+        .map((ans, i) => {
+          const symbol = constants.embeds.emojis(['A', 'B', 'C', 'D'][i]);
+          return `${symbol} ${ans}`;
+        }).join('\n');
+
+      embed.addField('Choices', choices);
+    }
+
+    return embed;
   }
 }
