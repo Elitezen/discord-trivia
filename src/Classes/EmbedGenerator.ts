@@ -81,6 +81,7 @@ export default class EmbedGenerator {
         Array.from(this.game.leaderboard)
           .map((entry, i) => {
             return {
+              name: `#${i + 1}`,
               value: `${entry[1].toString()}  ${entry[1].points}  ${entry[1].isCorrect ? '✅' : '❌'}`,
             };
           })
