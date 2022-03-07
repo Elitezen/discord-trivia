@@ -30,7 +30,7 @@ export default class TriviaManager {
     } else if (this.games.has(interaction.channelId)) {
       throw new DiscordTriviaError(
         "There's already an ongoing game in this channel",
-        "ONGION_GAME"
+        "ONGOING_GAME"
       );
     }
 
