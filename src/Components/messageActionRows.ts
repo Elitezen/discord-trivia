@@ -8,8 +8,8 @@ const buttonRowChoicesMultiple = new MessageActionRow().addComponents([
 ]);
 
 const buttonRowChoicesBoolean = new MessageActionRow().addComponents([
-  new MessageButton().setCustomId("1").setLabel("TRUE").setStyle("PRIMARY"),
-  new MessageButton().setCustomId("0").setLabel("FALSE").setStyle("DANGER"),
+  new MessageButton().setCustomId("1").setLabel("True").setStyle("PRIMARY"),
+  new MessageButton().setCustomId("0").setLabel("False").setStyle("DANGER"),
 ]);
 
 const buttonRowQueue = new MessageActionRow().addComponents([
@@ -42,12 +42,12 @@ const buttonRowChoicesMultipleDisabled = new MessageActionRow().addComponents([
 const buttonRowChoicesBooleanDisabled = new MessageActionRow().addComponents([
   new MessageButton()
     .setCustomId("1")
-    .setLabel("TRUE")
+    .setLabel("True")
     .setStyle("PRIMARY")
     .setDisabled(true),
   new MessageButton()
     .setCustomId("0")
-    .setLabel("FALSE")
+    .setLabel("False")
     .setStyle("DANGER")
     .setDisabled(true),
 ]);
