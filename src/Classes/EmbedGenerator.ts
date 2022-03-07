@@ -73,28 +73,33 @@ export default class EmbedGenerator {
   }
 
   leaderboardUpdate() {
-    return new MessageEmbed()
+    const embed = new MessageEmbed()
       .setAuthor(constants.embeds.author)
       .setTitle("Leaderboard")
       .setColor(this.theme)
       .addFields(
-        Array.from(this.game.leaderboard)
-          .map((entry, i) => {
-            return {
-              name: `#${i + 1}`,
-              value: `${entry[1].toString()}  ${entry[1].points}  ${entry[1].isCorrect ? '✅' : '❌'}`,
-            };
-          })
+        Array.from(this.game.leaderboard).map((entry, i) => {
+          return {
+            name: `#${i + 1}`,
+            value: `${entry[1].toString()}  ${entry[1].points}  ${
+              entry[1].isCorrect ? "✅" : "❌"
+            }`,
+          };
+        })
       );
+
+    if (this.game.players.every((p) => p.isCorrect)) {
+      embed.setDescription("Everyone got it right!");
+    } else if (this.game.players.every((p) => !p.isCorrect)) {
+      embed.setDescription("Nobody got it right.");
+    }
+
+    return embed;
   }
 
   finalLeaderboard() {
     const { emojis } = constants.embeds;
-    const medals = [
-      emojis('GOLD'),
-      emojis('SILVER'),
-      emojis('BRONZE')
-    ];
+    const medals = [emojis("GOLD"), emojis("SILVER"), emojis("BRONZE")];
 
     const podium = this.game.leaderboard
       .first(3)
@@ -132,14 +137,15 @@ export default class EmbedGenerator {
       )
       .setColor(this.theme)
       .setFooter(constants.embeds.interactWithButtons);
-    if (question.type == 'multiple') {
+    if (question.type == "multiple") {
       const choices = question.allAnswers
         .map((ans, i) => {
-          const symbol = constants.embeds.emojis(['A', 'B', 'C', 'D'][i]);
+          const symbol = constants.embeds.emojis(["A", "B", "C", "D"][i]);
           return `${symbol} ${ans}`;
-        }).join('\n');
+        })
+        .join("\n");
 
-      embed.addField('Choices', choices);
+      embed.addField("Choices", choices);
     }
 
     return embed;

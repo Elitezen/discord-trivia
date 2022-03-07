@@ -22,11 +22,17 @@ export default class TriviaManager {
   }
 
   createGame(interaction: CommandInteraction, options?: TriviaGameOptions) {
-    if (!interaction.isCommand())
+    if (!interaction.isCommand()) {
       throw new DiscordTriviaError(
         "Supplied interaction must be a CommandInteraction",
         "INVALID_INTERACTION"
       );
+    } else if (this.games.has(interaction.channelId)) {
+      throw new DiscordTriviaError(
+        "There's already an ongoing game in this channel",
+        "ONGION_GAME"
+      );
+    }
 
     return new TriviaGame(interaction, this, options);
   }

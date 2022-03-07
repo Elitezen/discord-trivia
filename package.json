@@ -12,7 +12,7 @@
     "prepublish": "npm run build",
     "beta": "npm i && npm run build",
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prep": "npm run prettier && npm run build && git add ."
   },
   "repository": {
     "type": "git",
