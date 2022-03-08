@@ -1,8 +1,8 @@
 ﻿![Banner](Images/banner.svg)
 
 # Discord Trivia
-### **⚠️ This project is still a WIP**
-Easily integrate trivia games into your Discord.js client with only a few of code!
+### **⚠️ This project is under construction ⚠️**
+Discord Trivia is a TypeScript library which builds on top of [Easy Trivia](https://github.com/Elitezen/easy-trivia) and [Discord.JS](https://github.com/discordjs/discord.js/) to easily integrate trivia matches via your Discord client. 
 
 Testing Phase
 
@@ -32,8 +32,11 @@ try {
 }
 ```
 
+# Contributing
+[Read here for contributing](https://github.com/Elitezen/discord-trivia/blob/main/CONTRIBUTING.md)
+
 # Docs
-The docs are coming soon!
+TBD
 
 # Support Server
 [![](http://invidget.switchblade.xyz/wtwM4HhbAr)](https://discord.gg/wtwM4HhbAr)
