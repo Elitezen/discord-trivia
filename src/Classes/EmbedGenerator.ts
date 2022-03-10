@@ -1,5 +1,5 @@
 import { ColorResolvable, MessageEmbed } from "discord.js";
-import { TriviaQuestion } from "easy-trivia";
+import { Categories, TriviaQuestion } from "easy-trivia";
 import constants from "../../constants";
 import TriviaGame from "../Classes/TriviaGame";
 
@@ -19,10 +19,15 @@ export default class EmbedGenerator {
       )
       .setColor(this.theme)
       .setAuthor(constants.embeds.author)
+      .setThumbnail(
+        "https://cdn.discordapp.com/attachments/947636249856999424/947636392673038336/icon.png"
+      )
       .addFields(
         {
           name: "Category",
-          value: this.game.options.triviaCategory || "Randomized",
+          value:
+            Categories.prettyCategoryName(this.game.options.triviaCategory!) ||
+            "Randomized",
           inline: true,
         },
         {
@@ -37,7 +42,7 @@ export default class EmbedGenerator {
         }
       )
       .setImage(
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Example_image.svg/600px-Example_image.svg.png"
+        "https://media.discordapp.net/attachments/947636249856999424/947636392450732092/banner.png"
       )
       .setFooter(constants.embeds.interactWithButtons);
   }
@@ -60,6 +65,9 @@ export default class EmbedGenerator {
 
     return new MessageEmbed()
       .setTitle("Trivia Game is now starting!")
+      .setThumbnail(
+        "https://cdn.discordapp.com/attachments/947636249856999424/947636392673038336/icon.png"
+      )
       .setColor(this.theme)
       .setDescription(
         `**Players:**\n${playersList}${
@@ -76,6 +84,9 @@ export default class EmbedGenerator {
     const embed = new MessageEmbed()
       .setAuthor(constants.embeds.author)
       .setTitle("Leaderboard")
+      .setThumbnail(
+        "https://cdn.discordapp.com/attachments/947636249856999424/947636392673038336/icon.png"
+      )
       .setColor(this.theme)
       .addFields(
         Array.from(this.game.leaderboard).map((entry, i) => {
@@ -108,6 +119,9 @@ export default class EmbedGenerator {
     return new MessageEmbed()
       .setAuthor(constants.embeds.author)
       .setTitle("Game Has Ended")
+      .setThumbnail(
+        "https://cdn.discordapp.com/attachments/947636249856999424/947636392673038336/icon.png"
+      )
       .setColor(this.theme)
       .setDescription(podium)
       .setFooter({
@@ -119,6 +133,9 @@ export default class EmbedGenerator {
     const embed = new MessageEmbed()
       .setAuthor(constants.embeds.author)
       .setTitle("New Question")
+      .setThumbnail(
+        "https://cdn.discordapp.com/attachments/947636249856999424/947636392673038336/icon.png"
+      )
       .addFields(
         {
           name: "Category",

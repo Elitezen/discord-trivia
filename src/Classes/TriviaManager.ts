@@ -28,10 +28,13 @@ export default class TriviaManager {
         "INVALID_INTERACTION"
       );
     } else if (this.games.has(interaction.channelId)) {
-      throw new DiscordTriviaError(
-        "There's already an ongoing game in this channel",
-        "ONGOING_GAME"
-      );
+      const errorMessage = "There's already an ongoing game in this channel";
+      interaction.reply({
+        content: errorMessage,
+        ephemeral: true,
+      });
+
+      throw new DiscordTriviaError(errorMessage, "ONGOING_GAME");
     }
 
     return new TriviaGame(interaction, this, options);

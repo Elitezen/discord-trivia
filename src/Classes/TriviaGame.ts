@@ -24,6 +24,7 @@ import {
 } from "../Typings/interfaces";
 import EmbedGenerator from "./EmbedGenerator";
 import { TriviaGameState, TriviaPlayers } from "../Typings/types";
+import DiscordTriviaError from "./DiscordTriviaError";
 // import CanvasGenerator from "./CanvasGenerator";
 import {
   buttonRowChoicesBoolean,
@@ -116,7 +117,14 @@ export default class TriviaGame {
         });
 
         await this.startComponentCollector();
+        this.state = "QUEUE";
       } catch (err) {
+        this.state = "ENDED";
+        this.interaction.reply({
+          content: (err as DiscordTriviaError).message,
+          ephemeral: true,
+        });
+
         reject(err);
       }
     });
@@ -287,8 +295,6 @@ export default class TriviaGame {
   }
 
   private async startComponentCollector() {
-    this.state = "QUEUE";
-
     const msg = await this.channel.send({
       embeds: [this.embeds.gameQueueStart()],
       components: [TriviaGame.buttonRows.queue],
@@ -369,7 +375,7 @@ export default class TriviaGame {
 
   private updateLeaderboard() {
     this.leaderboard = this.players.sort((a, b) => {
-      return a.points - b.points;
+      return b.points - a.points;
     });
   }
 }
