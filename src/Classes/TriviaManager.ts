@@ -55,7 +55,7 @@ export default class TriviaManager {
     },
 
     validatePlayerCount(
-      label: "minPlayerCount" | "maxPlayerCount",
+      label: "minimumPlayerCount" | "maximumPlayerCount",
       val: unknown
     ) {
       if (!val && val != 0) {
@@ -89,7 +89,7 @@ export default class TriviaManager {
     checkPlayerCountRelation(min: number, max: number) {
       if (min > max)
         throw new DiscordTriviaError(
-          "The maxPlayerCount option for TriviaGameOptions cannot be less than the minPlayerCountOption",
+          "The maximumPlayerCount option for TriviaGameOptions cannot be less than the minimumPlayerCountOption",
           "INVALID_OPTION"
         );
     },
@@ -262,14 +262,17 @@ export default class TriviaManager {
 
     validateGameOptions(obj: TriviaGameOptions): void {
       try {
-        this.validatePlayerCount("minPlayerCount", obj.minPlayerCount);
-        this.validatePlayerCount("maxPlayerCount", obj.maxPlayerCount);
-        this.validatePointRange("maxPoints", obj.maxPoints);
-        this.validatePointRange("minPoints", obj.minPoints);
+        this.validatePlayerCount("minimumPlayerCount", obj.minimumPlayerCount);
+        this.validatePlayerCount("maximumPlayerCount", obj.maximumPlayerCount);
+        this.validatePointRange("maxPoints", obj.maximumPoints);
+        this.validatePointRange("minPoints", obj.minimumPoints);
 
-        this.checkPlayerCountRelation(obj.minPlayerCount!, obj.maxPlayerCount!);
+        this.checkPlayerCountRelation(
+          obj.minimumPlayerCount!,
+          obj.maximumPlayerCount!
+        );
 
-        this.checkPointRangeRelation(obj.minPoints!, obj.maxPoints!);
+        this.checkPointRangeRelation(obj.minimumPoints!, obj.maximumPoints!);
 
         this.validateTimePerQuestion(obj.timePerQuestion);
         this.validateQuestionDifficulty(obj.questionDifficulty);

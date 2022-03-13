@@ -37,7 +37,7 @@ export default class EmbedGenerator {
         },
         {
           name: "Max Players",
-          value: this.game.options.maxPlayerCount.toString(),
+          value: this.game.options.maximumPlayerCount.toString(),
           inline: true,
         }
       )

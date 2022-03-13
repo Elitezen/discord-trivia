@@ -61,16 +61,16 @@ export default class TriviaGame {
   public messages: Collection<string, Message>;
 
   public static readonly defaults: TriviaGameOptionsStrict = {
-    minPlayerCount: 1,
-    maxPlayerCount: 50,
+    minimumPlayerCount: 1,
+    maximumPlayerCount: 50,
     timePerQuestion: 20_000,
     triviaCategory: null as unknown as TriviaCategoryName,
     questionAmount: 10,
     questionDifficulty: null as unknown as TriviaQuestionDifficulty,
     questionType: null as unknown as TriviaQuestionType,
     queueTime: 15_000,
-    minPoints: 1,
-    maxPoints: 100,
+    minimumPoints: 1,
+    maximumPoints: 100,
   };
 
   constructor(
@@ -176,7 +176,11 @@ export default class TriviaGame {
   }
 
   private calculatePoints(timePassed: number) {
-    const { timePerQuestion, maxPoints, minPoints } = this.options;
+    const {
+      timePerQuestion,
+      maximumPoints: maxPoints,
+      minimumPoints: minPoints,
+    } = this.options;
     const timeProportion = Number(
       (timePassed / timePerQuestion).toPrecision(2)
     );
@@ -347,7 +351,7 @@ export default class TriviaGame {
 
         this.messages.set(msg1.id, msg1);
 
-        if (this.players.size === this.options.maxPlayerCount) {
+        if (this.players.size === this.options.maximumPlayerCount) {
           collector.stop("Game has reached set maximum player capacity");
         }
       }
@@ -358,7 +362,7 @@ export default class TriviaGame {
 
       if (
         collector.endReason ||
-        this.players.size >= this.options.minPlayerCount
+        this.players.size >= this.options.minimumPlayerCount
       ) {
         await this.initializeGame();
       } else {
