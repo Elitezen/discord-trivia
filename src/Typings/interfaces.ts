@@ -22,7 +22,7 @@ export interface DiscordTriviaErrorMessages {
   };
 }
 
-export interface TriviaCommandBuilderConfigEntry {
+export interface LockedGameOptionsEntry {
   optionName: TriviaGameOptionKeys;
   value: string | number | null;
 }
@@ -30,7 +30,6 @@ export interface TriviaCommandBuilderConfigEntry {
 export interface TriviaCommandBuilderOptions {
   name: string;
   description: string;
-  type?: TriviaCommandBuilderType;
 }
 
 export interface TriviaCommandBuilderOptionsStrict {
