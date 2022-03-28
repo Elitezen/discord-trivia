@@ -1,7 +1,7 @@
 import { ColorResolvable, MessageEmbed } from "discord.js";
-import { Categories, TriviaQuestion } from "easy-trivia";
+import { Category, CategoryNameResolvable, CategoryIdResolvable, Question, CategoryResolvable } from 'easy-trivia';
 import constants from "../../constants";
-import TriviaGame from "../Classes/TriviaGame";
+import TriviaGame from "./TriviaGame";
 
 export default class EmbedGenerator {
   private readonly game: TriviaGame;
@@ -26,7 +26,7 @@ export default class EmbedGenerator {
         {
           name: "Category",
           value:
-            Categories.prettyCategoryName(this.game.options.triviaCategory!) ||
+            Category.resolve(this.game.options.triviaCategory as CategoryResolvable)?.prettyName ||
             "Randomized",
           inline: true,
         },
@@ -37,7 +37,7 @@ export default class EmbedGenerator {
         },
         {
           name: "Max Players",
-          value: this.game.options.maximumPlayerCount.toString(),
+          value: this.game.options.maximumPlayerCount.toString() || 'NULL',
           inline: true,
         }
       )
@@ -129,7 +129,7 @@ export default class EmbedGenerator {
       });
   }
 
-  question(question: TriviaQuestion) {
+  question(question: Question) {
     const embed = new MessageEmbed()
       .setAuthor(constants.embeds.author)
       .setTitle("New Question")

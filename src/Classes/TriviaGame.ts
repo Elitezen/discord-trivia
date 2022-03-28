@@ -11,16 +11,15 @@ import {
 } from "discord.js";
 import {
   getQuestions,
-  TriviaCategoryName,
-  TriviaQuestion,
-  TriviaQuestionDifficulty,
-  TriviaQuestionType,
+  CategoryName,
+  Question,
+  QuestionDifficulty,
+  QuestionType,
 } from "easy-trivia";
 import TriviaManager from "./TriviaManager";
 import {
   TriviaGameOptions,
-  TriviaGameOptionsStrict,
-  TriviaPlayer,
+  TriviaPlayer
 } from "../Typings/interfaces";
 import EmbedGenerator from "./EmbedGenerator";
 import { TriviaGameState, TriviaPlayers } from "../Typings/types";
@@ -54,20 +53,20 @@ export default class TriviaGame {
   private readonly embeds: EmbedGenerator;
   // private readonly canvas: CanvasGenerator;
   public readonly players: TriviaPlayers;
-  public readonly options: TriviaGameOptionsStrict;
+  public readonly options: TriviaGameOptions;
   public state: TriviaGameState;
-  private questions: TriviaQuestion[];
+  private questions: Question[];
   public leaderboard: TriviaPlayers;
   public messages: Collection<string, Message>;
 
-  public static readonly defaults: TriviaGameOptionsStrict = {
+  public static readonly defaults: TriviaGameOptions = {
     minimumPlayerCount: 1,
     maximumPlayerCount: 50,
     timePerQuestion: 20_000,
-    triviaCategory: null as unknown as TriviaCategoryName,
+    triviaCategory: null as unknown as CategoryName,
     questionAmount: 10,
-    questionDifficulty: null as unknown as TriviaQuestionDifficulty,
-    questionType: null as unknown as TriviaQuestionType,
+    questionDifficulty: null as unknown as QuestionDifficulty,
+    questionType: null as unknown as QuestionType,
     queueTime: 15_000,
     minimumPoints: 1,
     maximumPoints: 100,
@@ -76,7 +75,7 @@ export default class TriviaGame {
   constructor(
     interaction: CommandInteraction,
     manager: TriviaManager,
-    options?: TriviaGameOptions
+    options?: Partial<TriviaGameOptions>
   ) {
     this.manager = manager;
     this.interaction = interaction;
@@ -108,19 +107,19 @@ export default class TriviaGame {
       try {
         this.manager.validator.validateDiscordStructures(this);
         this.manager.validator.validateGameOptions(this.options);
-
         this.manager.games.set(this.channel.id, this);
+
+        await this.startComponentCollector();
 
         await this.interaction.reply({
           content: "Game has started. Click the join button to enter",
           ephemeral: true,
         });
-
-        await this.startComponentCollector();
+      
         this.state = "QUEUE";
       } catch (err) {
         this.state = "ENDED";
-        this.interaction.reply({
+        this.interaction.followUp({
           content: (err as DiscordTriviaError).message,
           ephemeral: true,
         });
@@ -190,7 +189,7 @@ export default class TriviaGame {
     return points;
   }
 
-  private async emitQuestion(question: TriviaQuestion): Promise<void> {
+  private async emitQuestion(question: Question): Promise<void> {
     return new Promise(async (resolve, reject) => {
       if (this.state == "ENDED") return;
       const emissionTime = performance.now();

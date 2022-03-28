@@ -1,8 +1,7 @@
 import { Collection, CommandInteraction } from "discord.js";
 import {
   TriviaGameOptions,
-  TriviaManagerOptions,
-  TriviaManagerOptionsStrict,
+  TriviaManagerOptions
 } from "../Typings/interfaces";
 import { TriviaManagerGames } from "../Typings/types";
 import DiscordTriviaError from "./DiscordTriviaError";
@@ -10,8 +9,8 @@ import TriviaGame from "./TriviaGame";
 
 export default class TriviaManager {
   public readonly games: TriviaManagerGames = new Collection();
-  public readonly options: TriviaManagerOptionsStrict;
-  public static readonly defaults: TriviaManagerOptionsStrict = {
+  public readonly options: TriviaManagerOptions;
+  public static readonly defaults: TriviaManagerOptions = {
     theme: "BLURPLE",
   };
 
@@ -21,7 +20,7 @@ export default class TriviaManager {
       : TriviaManager.defaults;
   }
 
-  createGame(interaction: CommandInteraction, options?: TriviaGameOptions) {
+  createGame(interaction: CommandInteraction, options?: Partial<TriviaGameOptions>) {
     if (!interaction.isCommand()) {
       throw new DiscordTriviaError(
         "Supplied interaction must be a CommandInteraction",

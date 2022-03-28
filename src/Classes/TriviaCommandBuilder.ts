@@ -1,5 +1,4 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { ApplicationCommandData } from "discord.js";
 import {
   LockedGameOptionsEntry,
   TriviaCommandBuilderOptions,
@@ -9,9 +8,9 @@ import { LockedOptionApplier, TriviaGameOptionKeys } from "../Typings/types";
 import TriviaGame from "./TriviaGame";
 
 export default class TriviaCommandBuilder {
-  private build!: SlashCommandBuilder;
-  public gameOptions!: TriviaGameOptions;
-  private lockedGameOptionsData!: LockedGameOptionsEntry[];
+  private build: SlashCommandBuilder;
+  public gameOptions: TriviaGameOptions = TriviaGame.defaults;
+  public lockedGameOptionsData: LockedGameOptionsEntry[] = [];
 
   constructor(options: TriviaCommandBuilderOptions) {
     this.build = new SlashCommandBuilder()
@@ -31,6 +30,7 @@ export default class TriviaCommandBuilder {
       );
     },
     maximumPoints: () => {
+      console.log('hit')
       this.build.addIntegerOption((opt) =>
         opt
           .setName("maximum_points")
@@ -145,6 +145,14 @@ export default class TriviaCommandBuilder {
     },
   };
 
+  getGameOptions(extraOptions?:TriviaGameOptions):TriviaGameOptions {
+    const options = this.gameOptions;
+    return {
+      ...options,
+      ...extraOptions
+    };
+  }
+
   private applyOptions() {
     const toApply = Object.keys(TriviaGame.defaults).filter(
       (optionName) =>
@@ -159,23 +167,16 @@ export default class TriviaCommandBuilder {
 
   lockGameOption(entry: LockedGameOptionsEntry) {
     this.lockedGameOptionsData.push(entry);
-
-    // Short-circuiting object indexing type check
-    (this.gameOptions[entry.optionName] as unknown) = entry.value;
     return this;
   }
 
   lockGameOptions(entries: LockedGameOptionsEntry[]) {
     entries.forEach((e) => {
       this.lockedGameOptionsData.push(e);
-
-      // Short-circuiting object indexing type check
-      (this.gameOptions[e.optionName] as unknown) = e.value;
     });
     return this;
   }
 
-  // Returns incompatible with RESTPostAPIApplicationCommandsJSONBody
   toData() {
     this.applyOptions();
     return this.build.toJSON();

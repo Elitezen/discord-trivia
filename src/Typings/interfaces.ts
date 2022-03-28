@@ -5,9 +5,9 @@ import {
   Snowflake,
 } from "discord.js";
 import {
-  TriviaCategoryName,
-  TriviaQuestionDifficulty,
-  TriviaQuestionType,
+  CategoryResolvable,
+  QuestionDifficulty,
+  QuestionType
 } from "easy-trivia";
 import { TriviaCommandBuilderType, TriviaGameOptionKeys } from "./types";
 
@@ -30,11 +30,6 @@ export interface LockedGameOptionsEntry {
 export interface TriviaCommandBuilderOptions {
   name: string;
   description: string;
-}
-
-export interface TriviaCommandBuilderOptionsStrict {
-  name: string;
-  description: string;
   type: TriviaCommandBuilderType;
 }
 
@@ -44,36 +39,19 @@ export interface TriviaGameData {
 }
 
 export interface TriviaGameOptions {
-  minimumPlayerCount?: number;
-  maximumPlayerCount?: number;
-  timePerQuestion?: number;
-  triviaCategory?: TriviaCategoryName | null;
-  questionAmount?: number;
-  questionDifficulty?: TriviaQuestionDifficulty | null;
-  questionType?: TriviaQuestionType | null;
-  queueTime?: number;
-  minimumPoints?: number;
-  maximumPoints?: number;
-}
-
-export interface TriviaGameOptionsStrict {
   minimumPlayerCount: number;
   maximumPlayerCount: number;
   timePerQuestion: number;
-  triviaCategory: TriviaCategoryName | null;
+  triviaCategory: CategoryResolvable | null;
   questionAmount: number;
-  questionDifficulty: TriviaQuestionDifficulty | null;
-  questionType: TriviaQuestionType | null;
+  questionDifficulty: QuestionDifficulty | null;
+  questionType: QuestionType | null;
   queueTime: number;
   minimumPoints: number;
   maximumPoints: number;
 }
 
 export interface TriviaManagerOptions {
-  theme?: ColorResolvable;
-}
-
-export interface TriviaManagerOptionsStrict {
   theme: ColorResolvable;
 }
 
