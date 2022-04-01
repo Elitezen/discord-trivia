@@ -7,6 +7,7 @@ import {
   InteractionReplyOptions,
   Message,
   MessageComponentInteraction,
+  Snowflake,
   TextBasedChannel,
 } from "discord.js";
 import {
@@ -18,7 +19,9 @@ import {
 } from "easy-trivia";
 import TriviaManager from "./TriviaManager";
 import {
+  ResultPlayerData,
   TriviaGameOptions,
+  TriviaGameResultData,
   TriviaPlayer
 } from "../Typings/interfaces";
 import EmbedGenerator from "./EmbedGenerator";
@@ -31,6 +34,7 @@ import {
   buttonRowQueue,
 } from "../Components/messageActionRows";
 import { promisify } from "util";
+import { EventEmitter } from "stream";
 
 const wait = promisify(setTimeout);
 async function reply(
@@ -44,7 +48,11 @@ async function reply(
   }
 }
 
-export default class TriviaGame {
+declare interface TriviaGame {
+  on(event: "pending" | "queue" | "inProgress" | "ended", listener: () => void): this;
+}
+
+class TriviaGame extends EventEmitter implements TriviaGame {
   public readonly manager: TriviaManager;
   public readonly interaction: CommandInteraction;
   public readonly channel: TextBasedChannel;
@@ -77,6 +85,8 @@ export default class TriviaGame {
     manager: TriviaManager,
     options?: Partial<TriviaGameOptions>
   ) {
+    super();
+
     this.manager = manager;
     this.interaction = interaction;
     this.channel = interaction.channel as TextBasedChannel;
@@ -88,9 +98,13 @@ export default class TriviaGame {
     this.options = options
       ? Object.assign(TriviaGame.defaults, options)
       : TriviaGame.defaults;
-    this.state = "PENDING";
+    this.state = "pending";
     this.embeds = new EmbedGenerator(this);
     this.messages = new Collection();
+
+    setImmediate(() => {
+      this.emit('pending');
+    });
     // this.canvas = new CanvasGenerator(this);
   }
 
@@ -100,9 +114,9 @@ export default class TriviaGame {
     queue: buttonRowQueue,
   };
 
-  start(): Promise<void> {
+  start(): Promise<object> {
     return new Promise(async (resolve, reject) => {
-      if (this.state == "ENDED") return;
+      if (this.state == 'ended') return;
 
       try {
         this.manager.validator.validateDiscordStructures(this);
@@ -116,9 +130,13 @@ export default class TriviaGame {
           ephemeral: true,
         });
       
-        this.state = "QUEUE";
+        this.state = "queue";
+        setImmediate(() => {
+          this.emit('queue');
+        });
       } catch (err) {
-        this.state = "ENDED";
+        this.state = "ended";
+        this.emit('ended');
         this.interaction.followUp({
           content: (err as DiscordTriviaError).message,
           ephemeral: true,
@@ -129,14 +147,32 @@ export default class TriviaGame {
     });
   }
 
+  data():TriviaGameResultData {
+    const playerData:ResultPlayerData[] = this.players.map(p => {
+      return {
+        id: p.id,
+        points: p.points
+      }
+    });
+    const resultData:TriviaGameResultData = {
+      hostMemberId: this.hostMember.id,
+      players: playerData
+    };
+
+    return resultData;
+  }
+
   end() {
     this.manager.games.delete(this.channel.id);
-    this.state = "ENDED";
+    this.state = "ended";
+    setImmediate(() => {
+      this.emit('ended');
+    });
   }
 
   private async beginGameLoop() {
     for await (const question of this.questions) {
-      if (this.state == "ENDED") return;
+      if (this.state == "ended") return;
 
       const msg = await this.channel.send({
         content: "🕥 **Preparing the next question...**",
@@ -191,7 +227,7 @@ export default class TriviaGame {
 
   private async emitQuestion(question: Question): Promise<void> {
     return new Promise(async (resolve, reject) => {
-      if (this.state == "ENDED") return;
+      if (this.state == "ended") return;
       const emissionTime = performance.now();
 
       const msg = await this.channel.send({
@@ -210,10 +246,12 @@ export default class TriviaGame {
       });
 
       collector.on("collect", async (i) => {
-        if (this.state == "ENDED") return;
+        if (this.state == "ended") return;
 
         const player = this.players.get(i.user.id)!;
         const member = await this.guild.members.fetch(i.user.id);
+        const answerTime = performance.now();
+        let timeElapsed = answerTime - emissionTime;;
 
         if (!player) {
           return void reply(i, {
@@ -228,15 +266,12 @@ export default class TriviaGame {
         } else if (
           question.checkAnswer(question.allAnswers[Number(i.customId)])
         ) {
-          const answerTime = performance.now();
-          const timeElapsed = answerTime - emissionTime;
-
           player.points += this.calculatePoints(timeElapsed);
           player.isCorrect = true;
         }
 
         await reply(i, {
-          content: "🔹 Your answer has been locked in",
+          content: `🔹 Your answer has been locked in!\nSpeed: ${+(timeElapsed / 1000).toFixed(2)} seconds`,
           ephemeral: true,
         });
 
@@ -250,10 +285,10 @@ export default class TriviaGame {
       });
 
       collector.on("end", async () => {
-        if (this.state == "ENDED") return;
+        if (this.state == "ended") return;
 
         const msg2 = await this.channel.send({
-          embeds: [this.embeds.leaderboardUpdate()],
+          embeds: [this.embeds.leaderboardUpdate(question)],
         });
 
         setTimeout(() => {
@@ -270,7 +305,7 @@ export default class TriviaGame {
   }
 
   private async initializeGame() {
-    if (this.state == "ENDED") return;
+    if (this.state == "ended") return;
 
     const {
       questionAmount: amount,
@@ -310,7 +345,7 @@ export default class TriviaGame {
     });
 
     collector.on("collect", async (int) => {
-      if (this.state == "ENDED") return;
+      if (this.state == "ended") return;
       if (this.players.has(int.user.id)) {
         const inQueueAlready: InteractionReplyOptions = {
           content: "❗ **You are already in the queue**",
@@ -357,7 +392,7 @@ export default class TriviaGame {
     });
 
     collector.on("end", async () => {
-      if (this.state == "ENDED") return;
+      if (this.state == "ended") return;
 
       if (
         collector.endReason ||
@@ -382,3 +417,5 @@ export default class TriviaGame {
     });
   }
 }
+
+export default TriviaGame;

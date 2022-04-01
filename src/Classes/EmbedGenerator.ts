@@ -9,7 +9,7 @@ export default class EmbedGenerator {
 
   constructor(game: TriviaGame) {
     this.game = game;
-    this.theme = game.manager.options.theme;
+    this.theme = game.manager.options.theme || 'BLURPLE';
   }
 
   gameQueueStart() {
@@ -80,7 +80,7 @@ export default class EmbedGenerator {
       .setFooter(constants.embeds.interactWithButtons);
   }
 
-  leaderboardUpdate() {
+  leaderboardUpdate(question:Question) {
     const embed = new MessageEmbed()
       .setAuthor(constants.embeds.author)
       .setTitle("Leaderboard")
@@ -99,10 +99,18 @@ export default class EmbedGenerator {
         })
       );
 
+    if (this.game.manager.options.showAnswers) {
+      embed.setDescription(`Correct Answer:\n**${question.correctAnswer}**`);
+    }
+
     if (this.game.players.every((p) => p.isCorrect)) {
-      embed.setDescription("Everyone got it right!");
+      embed.setFooter({
+        text: "Everyone got it right!"
+      });
     } else if (this.game.players.every((p) => !p.isCorrect)) {
-      embed.setDescription("Nobody got it right.");
+      embed.setFooter({
+        text: "Nobody got it right."
+      });
     }
 
     return embed;

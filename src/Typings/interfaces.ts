@@ -38,6 +38,16 @@ export interface TriviaGameData {
   players: Collection<Snowflake, TriviaPlayer>;
 }
 
+export interface ResultPlayerData {
+  id: Snowflake;
+  points: number;
+}
+
+export interface TriviaGameResultData {
+  hostMemberId: Snowflake;
+  players: ResultPlayerData[];
+}
+
 export interface TriviaGameOptions {
   minimumPlayerCount: number;
   maximumPlayerCount: number;
@@ -52,7 +62,8 @@ export interface TriviaGameOptions {
 }
 
 export interface TriviaManagerOptions {
-  theme: ColorResolvable;
+  theme?: ColorResolvable;
+  showAnswers?: boolean;
 }
 
 export interface TriviaPlayer extends GuildMember {

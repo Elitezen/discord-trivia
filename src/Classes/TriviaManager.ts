@@ -12,6 +12,7 @@ export default class TriviaManager {
   public readonly options: TriviaManagerOptions;
   public static readonly defaults: TriviaManagerOptions = {
     theme: "BLURPLE",
+    showAnswers: true
   };
 
   constructor(options?: TriviaManagerOptions) {
