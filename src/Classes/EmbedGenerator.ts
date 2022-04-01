@@ -1,7 +1,7 @@
 import { ColorResolvable, MessageEmbed } from "discord.js";
-import { Categories, TriviaQuestion } from "easy-trivia";
+import { Category, CategoryNameResolvable, CategoryIdResolvable, Question, CategoryResolvable } from 'easy-trivia';
 import constants from "../../constants";
-import TriviaGame from "../Classes/TriviaGame";
+import TriviaGame from "./TriviaGame";
 
 export default class EmbedGenerator {
   private readonly game: TriviaGame;
@@ -9,7 +9,7 @@ export default class EmbedGenerator {
 
   constructor(game: TriviaGame) {
     this.game = game;
-    this.theme = game.manager.options.theme;
+    this.theme = game.manager.options.theme || 'BLURPLE';
   }
 
   gameQueueStart() {
@@ -26,7 +26,7 @@ export default class EmbedGenerator {
         {
           name: "Category",
           value:
-            Categories.prettyCategoryName(this.game.options.triviaCategory!) ||
+            Category.resolve(this.game.options.triviaCategory as CategoryResolvable)?.prettyName ||
             "Randomized",
           inline: true,
         },
@@ -37,7 +37,7 @@ export default class EmbedGenerator {
         },
         {
           name: "Max Players",
-          value: this.game.options.maximumPlayerCount.toString(),
+          value: this.game.options.maximumPlayerCount.toString() || 'NULL',
           inline: true,
         }
       )
@@ -80,7 +80,7 @@ export default class EmbedGenerator {
       .setFooter(constants.embeds.interactWithButtons);
   }
 
-  leaderboardUpdate() {
+  leaderboardUpdate(question:Question) {
     const embed = new MessageEmbed()
       .setAuthor(constants.embeds.author)
       .setTitle("Leaderboard")
@@ -99,10 +99,18 @@ export default class EmbedGenerator {
         })
       );
 
+    if (this.game.manager.options.showAnswers) {
+      embed.setDescription(`Correct Answer:\n**${question.correctAnswer}**`);
+    }
+
     if (this.game.players.every((p) => p.isCorrect)) {
-      embed.setDescription("Everyone got it right!");
+      embed.setFooter({
+        text: "Everyone got it right!"
+      });
     } else if (this.game.players.every((p) => !p.isCorrect)) {
-      embed.setDescription("Nobody got it right.");
+      embed.setFooter({
+        text: "Nobody got it right."
+      });
     }
 
     return embed;
@@ -129,7 +137,7 @@ export default class EmbedGenerator {
       });
   }
 
-  question(question: TriviaQuestion) {
+  question(question: Question) {
     const embed = new MessageEmbed()
       .setAuthor(constants.embeds.author)
       .setTitle("New Question")
