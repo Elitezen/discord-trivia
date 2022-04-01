@@ -10,12 +10,13 @@ import TriviaGame from "./TriviaGame";
 export default class TriviaCommandBuilder {
   private build: SlashCommandBuilder;
   public gameOptions: TriviaGameOptions = TriviaGame.defaults;
-  public lockedGameOptionsData: LockedGameOptionsEntry[] = [];
+  private lockedGameOptionsData: LockedGameOptionsEntry[] = [];
+  private isApplied: Boolean = false;
 
-  constructor(options: TriviaCommandBuilderOptions) {
+  constructor(options?: TriviaCommandBuilderOptions) {
     this.build = new SlashCommandBuilder()
-      .setName(options.name)
-      .setDescription(options.description);
+      .setName(options?.name ?? "trivia")
+      .setDescription(options?.description ?? "Create a trivia game.");
   }
 
   private optionApplicators: LockedOptionApplier = {
@@ -177,13 +178,20 @@ export default class TriviaCommandBuilder {
     return this;
   }
 
-  toData() {
-    this.applyOptions();
+  // Returns incompatible with RESTPostAPIApplicationCommandsJSONBody
+  toJSON() { //If its toData() users command handlers probably will use toJSON() so it will throw an error
+    if(!this.isApplied){ 
+      this.applyOptions();
+      this.isApplied = true;
+    }
     return this.build.toJSON();
   }
 
   toBuilder() {
-    this.applyOptions();
+    if(!this.isApplied){ 
+      this.applyOptions();
+      this.isApplied = true;
+    }
     return this.build;
   }
 }
