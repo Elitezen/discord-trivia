@@ -2,6 +2,9 @@ import TriviaGame from "./TriviaGame";
 import { createCanvas } from "canvas";
 import { CanvasGeneratorOptions } from "../Typings/interfaces";
 
+/**
+ * Unused, TDB
+ */
 export default class CanvasGenerator {
   public readonly canvas = createCanvas(
     CanvasGenerator.dimensions.width,

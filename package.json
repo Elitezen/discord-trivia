@@ -5,14 +5,16 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "src"
+    "src",
+    "dist"
   ],
   "scripts": {
     "prettier": "prettier -w src/",
     "prepublish": "npm run build",
     "beta": "npm i && npm run build",
     "build": "tsc",
-    "prep": "npm run prettier && npm run build && git add ."
+    "prep": "npm run prettier && npm run build && git add .",
+    "preptest": "npm run build && npm link"
   },
   "repository": {
     "type": "git",

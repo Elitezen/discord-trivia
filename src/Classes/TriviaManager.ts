@@ -1,18 +1,18 @@
 import { Collection, CommandInteraction } from "discord.js";
-import {
-  TriviaGameOptions,
-  TriviaManagerOptions
-} from "../Typings/interfaces";
+import { TriviaGameOptions, TriviaManagerOptions } from "../Typings/interfaces";
 import { TriviaManagerGames } from "../Typings/types";
 import DiscordTriviaError from "./DiscordTriviaError";
 import TriviaGame from "./TriviaGame";
 
+/**
+ * @class Class for creating and managing ongiong games.
+ */
 export default class TriviaManager {
   public readonly games: TriviaManagerGames = new Collection();
   public readonly options: TriviaManagerOptions;
   public static readonly defaults: TriviaManagerOptions = {
     theme: "BLURPLE",
-    showAnswers: true
+    showAnswers: true,
   };
 
   constructor(options?: TriviaManagerOptions) {
@@ -21,7 +21,15 @@ export default class TriviaManager {
       : TriviaManager.defaults;
   }
 
-  createGame(interaction: CommandInteraction, options?: Partial<TriviaGameOptions>) {
+  /**
+   * Returns an instance of a TriviaGame
+   * @param {CommandInteraction} interaction - The interaction to assign to the game.
+   * @param {Partial<TriviaGameOptions>?} options - The configuration options to assign to the game (optional)
+   */
+  createGame(
+    interaction: CommandInteraction,
+    options?: Partial<TriviaGameOptions>
+  ): TriviaGame {
     if (!interaction.isCommand()) {
       throw new DiscordTriviaError(
         "Supplied interaction must be a CommandInteraction",
@@ -260,6 +268,64 @@ export default class TriviaManager {
       }
     },
 
+    validatePointsPerStreakAmount(val: unknown) {
+      if (!val) {
+        throw new DiscordTriviaError(
+          `A pointsPerStreakAmount option for TriviaGameOptions is required`,
+          "MISSING_OPTION"
+        );
+      } else if (typeof val != "number" && typeof val != "string") {
+        throw new DiscordTriviaError(
+          "The pointsPerStreakAmount option for TriviaGameOptions must be of type number or string",
+          "INVALID_OPTION"
+        );
+      } else if (isNaN(+val)) {
+        throw new DiscordTriviaError(
+          "The pointsPerStreakAmount option for TriviaGameOptions must be a number resolvable",
+          "INVALID_OPTION"
+        );
+      } else if (+val % 1 !== 0) {
+        throw new DiscordTriviaError(
+          "The pointsPerStreakAmount option for TriviaGameOptions must be a whole integer",
+          "INVALID_OPTION"
+        );
+      } else if (+val < 0) {
+        throw new DiscordTriviaError(
+          "The pointsPerStreakAmount option for TriviaGameOptions must be greater than or equal to 0",
+          "INVALID_OPTION"
+        );
+      }
+    },
+
+    validateMaximumStreakBonus(val: unknown) {
+      if (!val && val != 0) {
+        throw new DiscordTriviaError(
+          `A maximumStreakBonus option for TriviaGameOptions is required`,
+          "MISSING_OPTION"
+        );
+      } else if (typeof val != "number" && typeof val != "string") {
+        throw new DiscordTriviaError(
+          "The maximumStreakBonus option for TriviaGameOptions must be of type number or string",
+          "INVALID_OPTION"
+        );
+      } else if (isNaN(+val)) {
+        throw new DiscordTriviaError(
+          "The maximumStreakBonus option for TriviaGameOptions must be a number resolvable",
+          "INVALID_OPTION"
+        );
+      } else if (+val % 1 !== 0) {
+        throw new DiscordTriviaError(
+          "The maximumStreakBonus option for TriviaGameOptions must be a whole integer",
+          "INVALID_OPTION"
+        );
+      } else if (+val < 0) {
+        throw new DiscordTriviaError(
+          "The maximumStreakBonus option for TriviaGameOptions must be greater than or equal to 0",
+          "INVALID_OPTION"
+        );
+      }
+    },
+
     validateGameOptions(obj: TriviaGameOptions): void {
       try {
         this.validatePlayerCount("minimumPlayerCount", obj.minimumPlayerCount);
@@ -279,6 +345,8 @@ export default class TriviaManager {
         this.validateQuestionAmount(obj.questionAmount);
         this.validateQuestionType(obj.questionType);
         this.validateQueueTime(obj.queueTime);
+        this.validatePointsPerStreakAmount(obj.pointsPerStreakAmount);
+        this.validateMaximumStreakBonus(obj.maximumStreakBonus);
       } catch (err) {
         throw err;
       }

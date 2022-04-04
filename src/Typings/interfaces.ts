@@ -7,7 +7,7 @@ import {
 import {
   CategoryResolvable,
   QuestionDifficulty,
-  QuestionType
+  QuestionType,
 } from "easy-trivia";
 import { TriviaCommandBuilderType, TriviaGameOptionKeys } from "./types";
 
@@ -59,6 +59,10 @@ export interface TriviaGameOptions {
   queueTime: number;
   minimumPoints: number;
   maximumPoints: number;
+  pointsPerStreakAmount: number;
+  maximumStreakBonus: number;
+  streakDefinitionLevel: number;
+  timeBetweenRounds: number;
 }
 
 export interface TriviaManagerOptions {
@@ -70,4 +74,5 @@ export interface TriviaPlayer extends GuildMember {
   points: number;
   hasAnswered: boolean;
   isCorrect: boolean;
+  correctAnswerStreak: number;
 }

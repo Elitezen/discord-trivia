@@ -1,6 +1,13 @@
 import { ColorResolvable, MessageEmbed } from "discord.js";
-import { Category, CategoryNameResolvable, CategoryIdResolvable, Question, CategoryResolvable } from 'easy-trivia';
+import {
+  Category,
+  CategoryNameResolvable,
+  CategoryIdResolvable,
+  Question,
+  CategoryResolvable,
+} from "easy-trivia";
 import constants from "../../constants";
+import { TriviaPlayer } from "../Typings/interfaces";
 import TriviaGame from "./TriviaGame";
 
 export default class EmbedGenerator {
@@ -9,7 +16,7 @@ export default class EmbedGenerator {
 
   constructor(game: TriviaGame) {
     this.game = game;
-    this.theme = game.manager.options.theme || 'BLURPLE';
+    this.theme = game.manager.options.theme || "BLURPLE";
   }
 
   gameQueueStart() {
@@ -26,8 +33,9 @@ export default class EmbedGenerator {
         {
           name: "Category",
           value:
-            Category.resolve(this.game.options.triviaCategory as CategoryResolvable)?.prettyName ||
-            "Randomized",
+            Category.resolve(
+              this.game.options.triviaCategory as CategoryResolvable
+            )?.prettyName || "Randomized",
           inline: true,
         },
         {
@@ -37,7 +45,7 @@ export default class EmbedGenerator {
         },
         {
           name: "Max Players",
-          value: this.game.options.maximumPlayerCount.toString() || 'NULL',
+          value: this.game.options.maximumPlayerCount.toString() || "NULL",
           inline: true,
         }
       )
@@ -80,7 +88,7 @@ export default class EmbedGenerator {
       .setFooter(constants.embeds.interactWithButtons);
   }
 
-  leaderboardUpdate(question:Question) {
+  leaderboardUpdate(question: Question) {
     const embed = new MessageEmbed()
       .setAuthor(constants.embeds.author)
       .setTitle("Leaderboard")
@@ -90,28 +98,56 @@ export default class EmbedGenerator {
       .setColor(this.theme)
       .addFields(
         Array.from(this.game.leaderboard).map((entry, i) => {
+          const player = entry[1] as TriviaPlayer;
+          const streakBonus = Math.min(
+            Math.max(
+              (player.correctAnswerStreak -
+                (this.game.options.streakDefinitionLevel - 1)) *
+                this.game.options.pointsPerStreakAmount,
+              0
+            ),
+            this.game.options.maximumStreakBonus
+          );
+
           return {
             name: `#${i + 1}`,
-            value: `${entry[1].toString()}  ${entry[1].points}  ${
-              entry[1].isCorrect ? "✅" : "❌"
+            value: `${player.isCorrect ? "✅" : "❌"} ${player.toString()}  ${
+              player.points
+            } ${
+              player.correctAnswerStreak >=
+              this.game.options.streakDefinitionLevel
+                ? ` (🔥 +${streakBonus})`
+                : ""
             }`,
           };
         })
       );
 
+    let description = "";
+
     if (this.game.manager.options.showAnswers) {
-      embed.setDescription(`Correct Answer:\n**${question.correctAnswer}**`);
+      description += `Correct Answer:\n**${question.correctAnswer}**\n`;
+    }
+
+    const playersWithStreaks = this.game.players.filter(
+      (p) => p.correctAnswerStreak >= 3
+    );
+    if (playersWithStreaks.size) {
+      const list = playersWithStreaks.map((p) => p.toString()).join(", ");
+      description += `\n🔥 ${list} are on a streak!`;
     }
 
     if (this.game.players.every((p) => p.isCorrect)) {
       embed.setFooter({
-        text: "Everyone got it right!"
+        text: "Everyone got it right!",
       });
     } else if (this.game.players.every((p) => !p.isCorrect)) {
       embed.setFooter({
-        text: "Nobody got it right."
+        text: "Nobody got it right.",
       });
     }
+
+    embed.setDescription(description);
 
     return embed;
   }

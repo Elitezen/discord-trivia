@@ -31,7 +31,6 @@ export default class TriviaCommandBuilder {
       );
     },
     maximumPoints: () => {
-      console.log('hit')
       this.build.addIntegerOption((opt) =>
         opt
           .setName("maximum_points")
@@ -144,13 +143,47 @@ export default class TriviaCommandBuilder {
           .setRequired(false)
       );
     },
+    timeBetweenRounds: () => {
+      this.build.addIntegerOption((opt) =>
+        opt
+          .setName("time_between_rounds")
+          .setDescription("How long to wait between rounds in ms")
+          .setRequired(false)
+      );
+    },
+    pointsPerStreakAmount: () => {
+      this.build.addIntegerOption((opt) =>
+        opt
+          .setName("points_per_streak")
+          .setDescription(
+            "How many bonus points to award per streak accumulation"
+          )
+          .setRequired(false)
+      );
+    },
+    maximumStreakBonus: () => {
+      this.build.addIntegerOption((opt) =>
+        opt
+          .setName("max_streak_bonus")
+          .setDescription("Maximum bonus for accumulated streaks")
+          .setRequired(false)
+      );
+    },
+    streakDefinitionLevel: () => {
+      this.build.addIntegerOption((opt) =>
+        opt
+          .setName("streak_level")
+          .setDescription("At which consecutive correct answer to start streak")
+          .setRequired(false)
+      );
+    },
   };
 
-  getGameOptions(extraOptions?:TriviaGameOptions):TriviaGameOptions {
+  getGameOptions(extraOptions?: TriviaGameOptions): TriviaGameOptions {
     const options = this.gameOptions;
     return {
       ...options,
-      ...extraOptions
+      ...extraOptions,
     };
   }
 
@@ -179,8 +212,9 @@ export default class TriviaCommandBuilder {
   }
 
   // Returns incompatible with RESTPostAPIApplicationCommandsJSONBody
-  toJSON() { //If its toData() users command handlers probably will use toJSON() so it will throw an error
-    if(!this.isApplied){ 
+  toJSON() {
+    //If its toData() users command handlers probably will use toJSON() so it will throw an error
+    if (!this.isApplied) {
       this.applyOptions();
       this.isApplied = true;
     }
@@ -188,7 +222,7 @@ export default class TriviaCommandBuilder {
   }
 
   toBuilder() {
-    if(!this.isApplied){ 
+    if (!this.isApplied) {
       this.applyOptions();
       this.isApplied = true;
     }

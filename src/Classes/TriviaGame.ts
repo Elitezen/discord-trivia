@@ -7,7 +7,6 @@ import {
   InteractionReplyOptions,
   Message,
   MessageComponentInteraction,
-  Snowflake,
   TextBasedChannel,
 } from "discord.js";
 import {
@@ -22,7 +21,7 @@ import {
   ResultPlayerData,
   TriviaGameOptions,
   TriviaGameResultData,
-  TriviaPlayer
+  TriviaPlayer,
 } from "../Typings/interfaces";
 import EmbedGenerator from "./EmbedGenerator";
 import { TriviaGameState, TriviaPlayers } from "../Typings/types";
@@ -37,6 +36,7 @@ import { promisify } from "util";
 import { EventEmitter } from "stream";
 
 const wait = promisify(setTimeout);
+
 async function reply(
   int: MessageComponentInteraction,
   obj: InteractionReplyOptions
@@ -49,22 +49,91 @@ async function reply(
 }
 
 declare interface TriviaGame {
-  on(event: "pending" | "queue" | "inProgress" | "ended", listener: () => void): this;
+  on(event: "pending", listener: () => void): this;
+  on(event: "queue", listener: () => void): this;
+  on(event: "inProgress", listener: () => void): this;
+  on(event: "ended", listener: (data: TriviaGameResultData) => void): this;
+
+  on(event: "playerJoinQueue", listener: (player: TriviaPlayer) => void): this;
 }
 
+/**
+ * @class Class for trivia games. Holds dynamic data relating to the ongoing game.
+ */
 class TriviaGame extends EventEmitter implements TriviaGame {
+  /**
+   * The manager of this trivia game.
+   * @readonly
+   */
   public readonly manager: TriviaManager;
+
+  /**
+   * The interaction this game was initiated with.
+   * @readonly
+   */
   public readonly interaction: CommandInteraction;
+
+  /**
+   * The text channel this game was initiated in.
+   * @readonly
+   */
   public readonly channel: TextBasedChannel;
+
+  /**
+   * The guild this game was initiated in.
+   * @readonly
+   */
   public readonly guild: Guild;
+
+  /**
+   * The member who initiated this game.
+   * @readonly
+   */
   public readonly hostMember: GuildMember;
+
+  /**
+   * The embed generator for this game.
+   * @readonly
+   * @private
+   */
   private readonly embeds: EmbedGenerator;
   // private readonly canvas: CanvasGenerator;
+
+  /**
+   * The players participating in this game
+   * @readonly
+   */
   public readonly players: TriviaPlayers;
+
+  /**
+   * This game's configuration options.
+   * @readonly
+   */
   public readonly options: TriviaGameOptions;
+
+  /**
+   * The state of this game.
+   * @readonly
+   * @type {TriviaGameState}
+   */
   public state: TriviaGameState;
+
+  /**
+   * This game's array of questions to be used.
+   * @readonly
+   */
   private questions: Question[];
+
+  /**
+   * This game's leaderboard.
+   * @readonly
+   */
   public leaderboard: TriviaPlayers;
+
+  /**
+   * This game's messages.
+   * @readonly
+   */
   public messages: Collection<string, Message>;
 
   public static readonly defaults: TriviaGameOptions = {
@@ -78,6 +147,10 @@ class TriviaGame extends EventEmitter implements TriviaGame {
     queueTime: 15_000,
     minimumPoints: 1,
     maximumPoints: 100,
+    timeBetweenRounds: 6000,
+    pointsPerStreakAmount: 10,
+    maximumStreakBonus: 30,
+    streakDefinitionLevel: 3,
   };
 
   constructor(
@@ -103,7 +176,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
     this.messages = new Collection();
 
     setImmediate(() => {
-      this.emit('pending');
+      this.emit("pending");
     });
     // this.canvas = new CanvasGenerator(this);
   }
@@ -114,9 +187,12 @@ class TriviaGame extends EventEmitter implements TriviaGame {
     queue: buttonRowQueue,
   };
 
-  start(): Promise<object> {
+  /**
+   * Starts the trivia match.
+   */
+  start(): Promise<void> {
     return new Promise(async (resolve, reject) => {
-      if (this.state == 'ended') return;
+      if (this.state == "ended") return;
 
       try {
         this.manager.validator.validateDiscordStructures(this);
@@ -129,14 +205,14 @@ class TriviaGame extends EventEmitter implements TriviaGame {
           content: "Game has started. Click the join button to enter",
           ephemeral: true,
         });
-      
+
         this.state = "queue";
         setImmediate(() => {
-          this.emit('queue');
+          this.emit("queue");
         });
       } catch (err) {
         this.state = "ended";
-        this.emit('ended');
+        this.emit("ended");
         this.interaction.followUp({
           content: (err as DiscordTriviaError).message,
           ephemeral: true,
@@ -147,29 +223,40 @@ class TriviaGame extends EventEmitter implements TriviaGame {
     });
   }
 
-  data():TriviaGameResultData {
-    const playerData:ResultPlayerData[] = this.players.map(p => {
+  /**
+   * The data of this game.
+   * @type {TriviaGameResultData}
+   */
+  data(): TriviaGameResultData {
+    const playerData: ResultPlayerData[] = this.players.map((p) => {
       return {
         id: p.id,
-        points: p.points
-      }
+        points: p.points,
+      };
     });
-    const resultData:TriviaGameResultData = {
+    const resultData: TriviaGameResultData = {
       hostMemberId: this.hostMember.id,
-      players: playerData
+      players: playerData,
     };
 
     return resultData;
   }
 
+  /**
+   * Ends this game
+   */
   end() {
     this.manager.games.delete(this.channel.id);
     this.state = "ended";
     setImmediate(() => {
-      this.emit('ended');
+      this.emit("ended", this.data());
     });
   }
 
+  /**
+   * Starts iterating through TriviaGame#questions and emits each.
+   * @private
+   */
   private async beginGameLoop() {
     for await (const question of this.questions) {
       if (this.state == "ended") return;
@@ -179,7 +266,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
       });
 
       this.messages.set(msg.id, msg);
-      await wait(7500);
+      await wait(this.options.timeBetweenRounds);
       await this.emitQuestion(question);
     }
 
@@ -191,6 +278,9 @@ class TriviaGame extends EventEmitter implements TriviaGame {
     this.end();
   }
 
+  /**
+   * Prepares the game's data and channel for the next round.
+   */
   private async prepareNextRound() {
     this.messages
       .filter((msg) => msg.deletable)
@@ -203,6 +293,10 @@ class TriviaGame extends EventEmitter implements TriviaGame {
       });
 
     this.players.forEach((p) => {
+      if (!p.hasAnswered) {
+        p.correctAnswerStreak = 0;
+      }
+
       p.hasAnswered = false;
       p.isCorrect = false;
     });
@@ -210,6 +304,11 @@ class TriviaGame extends EventEmitter implements TriviaGame {
     this.updateLeaderboard();
   }
 
+  /**
+   * Calculates the amount of points to award the player.
+   * @param {number} timePassed - The amount of time elapsed since the question's emission in ms.
+   * @private
+   */
   private calculatePoints(timePassed: number) {
     const {
       timePerQuestion,
@@ -225,10 +324,14 @@ class TriviaGame extends EventEmitter implements TriviaGame {
     return points;
   }
 
+  /**
+   * Sends a question in the game's text channel and listens for answers.
+   * @param {Question} question - The question to send.
+   * @private
+   */
   private async emitQuestion(question: Question): Promise<void> {
     return new Promise(async (resolve, reject) => {
       if (this.state == "ended") return;
-      const emissionTime = performance.now();
 
       const msg = await this.channel.send({
         embeds: [this.embeds.question(question)],
@@ -237,22 +340,19 @@ class TriviaGame extends EventEmitter implements TriviaGame {
 
       this.messages.set(msg.id, msg);
 
-      const filter: CollectorFilter<[MessageComponentInteraction<"cached">]> = (
-        i
-      ) => this.players.has(i.user.id);
       const collector = this.channel.createMessageComponentCollector({
-        filter,
         time: this.options.timePerQuestion,
       });
 
+      const emissionTime = performance.now();
       collector.on("collect", async (i) => {
         if (this.state == "ended") return;
 
-        const player = this.players.get(i.user.id)!;
-        const member = await this.guild.members.fetch(i.user.id);
         const answerTime = performance.now();
-        let timeElapsed = answerTime - emissionTime;;
+        let timeElapsed = answerTime - emissionTime - 500; // -500ms to account for API lag
+        if (timeElapsed > this.options.timePerQuestion) return;
 
+        const player = this.players.get(i.user.id);
         if (!player) {
           return void reply(i, {
             content: "❌ You are not apart of this match",
@@ -263,29 +363,59 @@ class TriviaGame extends EventEmitter implements TriviaGame {
             content: "❗ **You have already chosen an answer**",
             ephemeral: true,
           }));
-        } else if (
-          question.checkAnswer(question.allAnswers[Number(i.customId)])
-        ) {
+        }
+
+        player.hasAnswered = true;
+        const answer = (
+          question.type == "multiple" ? question.allAnswers : ["False", "True"]
+        )[Number(i.customId)];
+        player.isCorrect = question.checkAnswer(answer);
+
+        if (player.isCorrect) {
           player.points += this.calculatePoints(timeElapsed);
-          player.isCorrect = true;
+          player.correctAnswerStreak++;
+
+          if (
+            player.correctAnswerStreak >= this.options.streakDefinitionLevel
+          ) {
+            const streakBonus = Math.min(
+              Math.max(
+                (player.correctAnswerStreak -
+                  (this.options.streakDefinitionLevel - 1)) *
+                  this.options.pointsPerStreakAmount,
+                0
+              ),
+              this.options.maximumStreakBonus
+            );
+
+            player.points += streakBonus;
+          }
+        } else {
+          player.isCorrect = false;
+          player.correctAnswerStreak = 0;
         }
 
         await reply(i, {
-          content: `🔹 Your answer has been locked in!\nSpeed: ${+(timeElapsed / 1000).toFixed(2)} seconds`,
+          content: `🔹 Your answer has been locked in!\n\n⚡ **Speed: ${+(
+            timeElapsed / 1000
+          ).toFixed(2)} seconds**`,
           ephemeral: true,
         });
 
+        const member = await this.guild.members.fetch(player.id);
         const msg1 = await this.channel.send({
           content: `**${member.displayName}** has locked in!`,
         });
 
         this.messages.set(msg1.id, msg1);
-
-        player.hasAnswered = true;
       });
 
       collector.on("end", async () => {
         if (this.state == "ended") return;
+
+        this.players
+          .filter((p) => !p.hasAnswered)
+          .forEach((p) => (p.correctAnswerStreak = 0));
 
         const msg2 = await this.channel.send({
           embeds: [this.embeds.leaderboardUpdate(question)],
@@ -298,12 +428,16 @@ class TriviaGame extends EventEmitter implements TriviaGame {
         }, 10_000);
 
         await this.prepareNextRound();
-        await wait(5000);
+        await wait(this.options.timeBetweenRounds);
         resolve();
       });
     });
   }
 
+  /**
+   * Starts the chain of private functions to start the game.
+   * @private
+   */
   private async initializeGame() {
     if (this.state == "ended") return;
 
@@ -332,6 +466,10 @@ class TriviaGame extends EventEmitter implements TriviaGame {
     await this.beginGameLoop();
   }
 
+  /**
+   * Sets up a listener to collect answers.
+   * @private
+   */
   private async startComponentCollector() {
     const msg = await this.channel.send({
       embeds: [this.embeds.gameQueueStart()],
@@ -375,9 +513,11 @@ class TriviaGame extends EventEmitter implements TriviaGame {
           points: 0,
           hasAnswered: false,
           isCorrect: false,
+          correctAnswerStreak: 0,
         });
 
         this.players.set(player.id, player);
+        this.emit("playerJoinQueue", player);
 
         const msg1 = await this.channel.send({
           content: `🙌   **${player.displayName}** has joined in!`,
@@ -411,6 +551,10 @@ class TriviaGame extends EventEmitter implements TriviaGame {
     });
   }
 
+  /**
+   * Updates data in the game's leaderboard
+   * @private
+   */
   private updateLeaderboard() {
     this.leaderboard = this.players.sort((a, b) => {
       return b.points - a.points;
