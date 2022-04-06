@@ -17,6 +17,3 @@ assignees: ''
 
 ## Stack Trace (Optional)
 [List all of the files involved in producing this bug]
-
-## Suggestion (Optional)
-[Suggest a way to fix this]
