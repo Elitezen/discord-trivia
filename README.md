@@ -1,7 +1,7 @@
 ﻿![Banner](Images/banner.svg)
 
 # Discord Trivia
-### **⚠️ This project is under construction ⚠️**
+### **⚠️ This project is in beta ⚠️**
 Discord Trivia is a NodeJS library which builds on top of [Easy Trivia](https://github.com/Elitezen/easy-trivia) and [Discord.JS](https://github.com/discordjs/discord.js/) to easily integrate trivia matches with your Discord client.
 
 ## Newest Additions
@@ -11,6 +11,12 @@ Discord Trivia is a NodeJS library which builds on top of [Easy Trivia](https://
 * 🐞 Bug Fixes, including one where True/False questions would not emit the correct answer when answer checking.
 * ✨ Polishes to what Discord users see 
 * 🗒️ README Draft Written
+
+## Installation
+Requires Node v16+ and Discord.JS 13.6.0 or higher
+```
+npm i discord-trivia
+```
 
 ## Example Usage
 ```js
@@ -25,7 +31,7 @@ module.exports = {
 		.setDescription('Starts a trivia match!'),
 	async execute(interaction) {
 		const game = trivia.createGame(interaction);
-        await game.start();
+    await game.start();
 	},
 };
 ```
@@ -209,6 +215,8 @@ interface TriviaPlayer extends GuildMember {
   correctAnswerStreak: number;
 }
 ```
+# Bug Reporting
+[View the bug report template](https://github.com/Elitezen/discord-trivia/blob/main/.github/ISSUE_TEMPLATE/bug-report.md)
 
 # Contributing
 [Read here for contributing](https://github.com/Elitezen/discord-trivia/blob/main/CONTRIBUTING.md)

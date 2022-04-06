@@ -48,6 +48,3 @@ export {
   TriviaGameOptionKeys,
   LockedOptionApplier,
 }
-
-// T/F always incorrect
-// Streaks max to 30
