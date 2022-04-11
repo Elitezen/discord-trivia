@@ -34,6 +34,7 @@ import {
 } from "../Components/messageActionRows";
 import { promisify } from "util";
 import { EventEmitter } from "stream";
+import RootComponent from "./RootComponent";
 
 const wait = promisify(setTimeout);
 
@@ -71,7 +72,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
    * The interaction this game was initiated with.
    * @readonly
    */
-  public readonly interaction: CommandInteraction;
+  public readonly component: RootComponent;
 
   /**
    * The text channel this game was initiated in.
@@ -154,19 +155,19 @@ class TriviaGame extends EventEmitter implements TriviaGame {
   };
 
   constructor(
-    interaction: CommandInteraction,
+    component: RootComponent,
     manager: TriviaManager,
     options?: Partial<TriviaGameOptions>
   ) {
     super();
 
     this.manager = manager;
-    this.interaction = interaction;
-    this.channel = interaction.channel as TextBasedChannel;
-    this.guild = interaction.guild as Guild;
+    this.component = component;
+    this.channel = component.channel as TextBasedChannel;
+    this.guild = component.guild as Guild;
     this.players = new Collection();
     this.questions = [];
-    this.hostMember = interaction.member as GuildMember;
+    this.hostMember = component.hostMember as GuildMember;
     this.leaderboard = new Collection();
     this.options = options
       ? Object.assign(TriviaGame.defaults, options)
@@ -201,7 +202,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
 
         await this.startComponentCollector();
 
-        await this.interaction.reply({
+        await this.component.reply[this.component.type]({
           content: "Game has started. Click the join button to enter",
           ephemeral: true,
         });
@@ -213,7 +214,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
       } catch (err) {
         this.state = "ended";
         this.emit("ended");
-        this.interaction.followUp({
+        this.component.followUp[this.component.type]({
           content: (err as DiscordTriviaError).message,
           ephemeral: true,
         });

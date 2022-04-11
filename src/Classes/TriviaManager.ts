@@ -1,7 +1,8 @@
-import { Collection, CommandInteraction } from "discord.js";
+import { Collection, CommandInteraction, Message } from "discord.js";
 import { TriviaGameOptions, TriviaManagerOptions } from "../Typings/interfaces";
 import { TriviaManagerGames } from "../Typings/types";
 import DiscordTriviaError from "./DiscordTriviaError";
+import RootComponent from "./RootComponent";
 import TriviaGame from "./TriviaGame";
 
 /**
@@ -27,25 +28,29 @@ export default class TriviaManager {
    * @param {Partial<TriviaGameOptions>?} options - The configuration options to assign to the game (optional)
    */
   createGame(
-    interaction: CommandInteraction,
+    root: CommandInteraction | Message,
     options?: Partial<TriviaGameOptions>
   ): TriviaGame {
-    if (!interaction.isCommand()) {
-      throw new DiscordTriviaError(
-        "Supplied interaction must be a CommandInteraction",
-        "INVALID_INTERACTION"
-      );
-    } else if (this.games.has(interaction.channelId)) {
-      const errorMessage = "There's already an ongoing game in this channel";
-      interaction.reply({
-        content: errorMessage,
-        ephemeral: true,
-      });
+    const component = new RootComponent(root);
 
-      throw new DiscordTriviaError(errorMessage, "ONGOING_GAME");
+    if (component.type == "interaction") {
+      if (!(component.entity as CommandInteraction).isCommand()) {
+        throw new DiscordTriviaError(
+          "Supplied interaction must be a CommandInteraction",
+          "INVALID_INTERACTION"
+        );
+      } else if (this.games.has(component.channel.id)) {
+        const errorMessage = "There's already an ongoing game in this channel";
+        component.reply["interaction"]({
+          content: errorMessage,
+          ephemeral: true,
+        });
+
+        throw new DiscordTriviaError(errorMessage, "ONGOING_GAME");
+      }
     }
 
-    return new TriviaGame(interaction, this, options);
+    return new TriviaGame(component, this, options);
   }
 
   public validator = {

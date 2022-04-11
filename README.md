@@ -5,12 +5,7 @@
 Discord Trivia is a NodeJS library which builds on top of [Easy Trivia](https://github.com/Elitezen/easy-trivia) and [Discord.JS](https://github.com/discordjs/discord.js/) to easily integrate trivia matches with your Discord client.
 
 ## Newest Additions
-* 🔥 Added Customizable Streaks!
-* 👂 `TriviaGame` now extends `EventEmitter` and has 5 events, [View Here](#events)
-* 🔎 Added minimal JSDoc typings to some methods.
-* 🐞 Bug Fixes, including one where True/False questions would not emit the correct answer when answer checking.
-* ✨ Polishes to what Discord users see 
-* 🗒️ README Draft Written
+* 🗒️ Added Message support
 
 ## Installation
 Requires Node v16+ and Discord.JS 13.6.0 or higher
@@ -30,8 +25,8 @@ module.exports = {
 		.setName('trivia')
 		.setDescription('Starts a trivia match!'),
 	async execute(interaction) {
-		const game = trivia.createGame(interaction);
-    await game.start();
+	  const game = trivia.createGame(interaction);
+      await game.start();
 	},
 };
 ```

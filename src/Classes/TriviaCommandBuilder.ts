@@ -1,4 +1,5 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
+import { CommandInteraction } from "discord.js";
 import {
   LockedGameOptionsEntry,
   TriviaCommandBuilderOptions,
@@ -179,14 +180,6 @@ export default class TriviaCommandBuilder {
     },
   };
 
-  getGameOptions(extraOptions?: TriviaGameOptions): TriviaGameOptions {
-    const options = this.gameOptions;
-    return {
-      ...options,
-      ...extraOptions,
-    };
-  }
-
   private applyOptions() {
     const toApply = Object.keys(TriviaGame.defaults).filter(
       (optionName) =>
@@ -211,9 +204,7 @@ export default class TriviaCommandBuilder {
     return this;
   }
 
-  // Returns incompatible with RESTPostAPIApplicationCommandsJSONBody
   toJSON() {
-    //If its toData() users command handlers probably will use toJSON() so it will throw an error
     if (!this.isApplied) {
       this.applyOptions();
       this.isApplied = true;
@@ -227,5 +218,44 @@ export default class TriviaCommandBuilder {
       this.isApplied = true;
     }
     return this.build;
+  }
+
+  getOptions(
+    int: CommandInteraction,
+    additionalOptions?: Partial<TriviaGameOptions>
+  ) {
+    const maximumPlayerCount = int.options.getInteger("maximum_player_count");
+    const maximumPoints = int.options.getInteger("maximum_points");
+    const minimumPlayerCount = int.options.getInteger("minimum_player_count");
+    const minimumPoints = int.options.getInteger("minimum_points");
+    const questionAmount = int.options.getInteger("question_amount");
+    const questionDifficulty = int.options.getString("question_difficulty");
+    const questionType = int.options.getString("question_type");
+    const queueTime = int.options.getInteger("queue_time");
+    const timePerQuestion = int.options.getInteger("time_per_question");
+    const triviaCategory = int.options.getString("category");
+    const timeBetweenRounds = int.options.getInteger("time_between_rounds");
+    const pointsPerStreakAmount = int.options.getInteger("points_per_streak");
+    const maximumStreakBonus = int.options.getInteger("max_streak_bonus");
+    const streakDefinitionLevel = int.options.getInteger("streak_level");
+
+    const options: TriviaGameOptions = Object.assign(TriviaGame.defaults, {
+      maximumPlayerCount,
+      maximumPoints,
+      minimumPlayerCount,
+      minimumPoints,
+      questionAmount,
+      questionDifficulty,
+      questionType,
+      queueTime,
+      timePerQuestion,
+      triviaCategory,
+      timeBetweenRounds,
+      pointsPerStreakAmount,
+      maximumStreakBonus,
+      streakDefinitionLevel,
+    });
+
+    return options;
   }
 }
