@@ -1,13 +1,7 @@
 import { ColorResolvable, MessageEmbed } from "discord.js";
-import {
-  Category,
-  CategoryNameResolvable,
-  CategoryIdResolvable,
-  Question,
-  CategoryResolvable,
-} from "easy-trivia";
+import { Category, Question, CategoryResolvable } from "easy-trivia";
 import constants from "../../constants";
-import { TriviaPlayer } from "../Typings/interfaces";
+import { QuestionData, TriviaPlayer } from "../Typings/interfaces";
 import TriviaGame from "./TriviaGame";
 
 export default class EmbedGenerator {
@@ -34,13 +28,16 @@ export default class EmbedGenerator {
           name: "Category",
           value:
             Category.resolve(
-              this.game.options.triviaCategory as CategoryResolvable
+              (this.game.options.questionData as QuestionData)
+                .category as CategoryResolvable
             )?.prettyName || "Randomized",
           inline: true,
         },
         {
           name: "Difficulty",
-          value: this.game.options.questionDifficulty || "Mixed",
+          value:
+            (this.game.options.questionData as QuestionData).difficulty ||
+            "Mixed",
           inline: true,
         },
         {
@@ -49,9 +46,7 @@ export default class EmbedGenerator {
           inline: true,
         }
       )
-      .setImage(
-        "https://media.discordapp.net/attachments/947636249856999424/947636392450732092/banner.png"
-      )
+      .setImage(this.game.manager.options.image!)
       .setFooter(constants.embeds.interactWithButtons);
   }
 

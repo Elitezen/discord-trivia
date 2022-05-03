@@ -4,6 +4,7 @@ import { TriviaManagerGames } from "../Typings/types";
 import DiscordTriviaError from "./DiscordTriviaError";
 import RootComponent from "./RootComponent";
 import TriviaGame from "./TriviaGame";
+import constants from "../../constants";
 
 /**
  * @class Class for creating and managing ongiong games.
@@ -14,6 +15,7 @@ export default class TriviaManager {
   public static readonly defaults: TriviaManagerOptions = {
     theme: "BLURPLE",
     showAnswers: true,
+    image: constants.libraryDefaults.defaultEmbedImage,
   };
 
   constructor(options?: TriviaManagerOptions) {
@@ -332,6 +334,8 @@ export default class TriviaManager {
     },
 
     validateGameOptions(obj: TriviaGameOptions): void {
+      if (Array.isArray(obj.questionData)) return;
+
       try {
         this.validatePlayerCount("minimumPlayerCount", obj.minimumPlayerCount);
         this.validatePlayerCount("maximumPlayerCount", obj.maximumPlayerCount);
@@ -346,9 +350,9 @@ export default class TriviaManager {
         this.checkPointRangeRelation(obj.minimumPoints!, obj.maximumPoints!);
 
         this.validateTimePerQuestion(obj.timePerQuestion);
-        this.validateQuestionDifficulty(obj.questionDifficulty);
-        this.validateQuestionAmount(obj.questionAmount);
-        this.validateQuestionType(obj.questionType);
+        this.validateQuestionDifficulty(obj.questionData.difficulty);
+        this.validateQuestionAmount(obj.questionData.amount);
+        this.validateQuestionType(obj.questionData.type);
         this.validateQueueTime(obj.queueTime);
         this.validatePointsPerStreakAmount(obj.pointsPerStreakAmount);
         this.validateMaximumStreakBonus(obj.maximumStreakBonus);

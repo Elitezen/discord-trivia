@@ -1,11 +1,20 @@
 ﻿![Banner](Images/banner.svg)
 
 # Discord Trivia
-### **⚠️ This project is in beta ⚠️**
-Discord Trivia is a NodeJS library which builds on top of [Easy Trivia](https://github.com/Elitezen/easy-trivia) and [Discord.JS](https://github.com/discordjs/discord.js/) to easily integrate trivia matches with your Discord client.
+discord-trivia is a NodeJS library which builds on top of [Easy Trivia](https://github.com/Elitezen/easy-trivia) and [Discord.JS](https://github.com/discordjs/discord.js/) to easily integrate trivia matches with your Discord client.
+
+Stay tuned for discord-fortunes: https://github.com/Elitezen/discord-fortunes
+
+### ⚠️ This project is in beta ⚠️
 
 ## Newest Additions
-* 🗒️ Added Message support
+⭐ Added support for custom questions!
+
+⭐ Added a TriviaCommandBuilder for setting up trivia slash commands!
+
+🛠️ Added ability to edit the default embed image.
+
+🛠️ `TriviaGameOptions#(triviaCategory & questionAmount & questionDifficulty & questionType)` have been grouped into `TriviaGameOptions#questionData` as the shape of [QuestionData](#questiondata).
 
 ## Installation
 Requires Node v16+ and Discord.JS 13.6.0 or higher
@@ -14,35 +23,62 @@ npm i discord-trivia
 ```
 
 ## Example Usage
-```js
-const { SlashCommandBuilder } = require('@discordjs/builders');
+Adjust to your command handler as necessary.
 
-const { TriviaManager } = require('discord-trivia');
-const trivia = new TriviaManager();
+### Using Slash Commands
+```js
+import { TriviaCommandBuilder, TriviaManager } from 'discord-trivia';
+
+const cmd = new TriviaCommandBuilder();
+
+const trivia = new TriviaManager({
+  theme: 'RED'
+});
 
 module.exports = {
-	data: new SlashCommandBuilder()
-		.setName('trivia')
-		.setDescription('Starts a trivia match!'),
+	data: cmd.toBuilder(),
 	async execute(interaction) {
-	  const game = trivia.createGame(interaction);
-      await game.start();
+	  const game = trivia.createGame(interaction, cmd.getOptions(interaction));
+
+      game
+        .start()
+        .catch(console.error);
 	},
 };
 ```
+
+### Using Messages
+```js
+import { TriviaManager } from 'discord-trivia';
+
+const trivia = new TriviaManager();
+
+client.on('messageCreate', message => {
+  if (message.author.bot) return;
+
+  const game = trivia.createGame(message);
+  
+  game
+    .start()
+    .catch(console.error);
+});
+```
+
 # Customizable
 Discord Trivia Gives you the power to customize your matches as you wish.
 
 ### Questions
-Discord Trivia games are powered by [Easy Trivia](https://github.com/Elitezen/easy-trivia), which is powered by the [Open Trivia Database](https://opentdb.com/) API. You can declare the exact type of questions you wish to be part of a match via [TriviaGameOptions](documentation#interfaces-triviagameoptions)
+Discord Trivia games are powered by [Easy Trivia](https://github.com/Elitezen/easy-trivia), which is powered by the [Open Trivia Database](https://opentdb.com/) API. You can declare the exact type of questions you wish to be part of a match via [TriviaGameOptions](#triviagameoptions)
 
 ```js
 const game = trivia.createGame(interaction, {
     timePerQuestion: 15_000,
-    triviaCategory: 'history',
-    questionAmount: 10,
-    questionDifficulty: 'hard',
-    questionType: 'multiple',
+    questionData: {
+      category: 'history',
+      amount: 10,
+      difficulty: 'hard',
+      type: 'multiple'
+    }
 });
 ```
 
@@ -56,11 +92,32 @@ npm i easy-trivia
 import { CategoryNamesStrict } from "easy-trivia";
 
 const game = trivia.createGame(interaction, {
-    triviaCategory: CategoryNamesStrict.ENTERTAINMENT_MUSICALS_AND_THEATRES
+    questionData: {
+      category: CategoryNamesStrict.ENTERTAINMENT_MUSICALS_AND_THEATRES
+    }
 });
 ```
 
 🚨 **Keep in mind**: Easy Trivia only works with ESM import/export syntax.
+
+### Custom Questions
+Create your own questions and have Discord Trivia serve them.
+
+Your question objects must be in the shape of [CustomQuestion](#customquestion) and be parsed by `prepareCustomQuestions()`
+
+```js
+const myQuestions:CustomQuestion[] = [
+  {
+    value: 'Best Ice Cream Flavor?',
+    correctAnswer: 'Shrimp',
+    incorrectAnswers: ['Vanilla', 'Chocolate', 'Strawberry']
+  }
+];
+
+const game = trivia.createGame(interaction, {
+  questionData: prepareCustomQuestions(myQuestions)
+});
+```
 
 ### Game Configuration
 Customize lobby restrictions, how your fast game flows and handles awarding points.
@@ -99,6 +156,15 @@ const randomColorTrivia = new TriviaManager({
 });
 ```
 
+### Embed Image
+Edit the default embed image.
+
+```js
+const trivia = new TriviaManager({
+  image: 'https://nerdist.com/wp-content/uploads/2020/07/maxresdefault.jpg'
+});
+```
+
 ### Events
 Execute code when something happens in your match or the state of your match changes.
 
@@ -131,6 +197,19 @@ await game.start();
 # Documentation (Draft)
 
 ## Interfaces
+
+## CustomQuestion
+A custom made question
+
+```ts
+interface CustomQuestion {
+  value: string;
+  category?: CategoryName<"Strict">;
+  difficulty?: QuestionDifficulty;
+  correctAnswer: string;
+  incorrectAnswers: [string, string, string] | [`${boolean}`];
+}
+```
 
 ## `TriviaGameData`
 The data a game holds.
@@ -168,20 +247,20 @@ interface TriviaGameResultData {
 ## `TriviaGameOptions`
 The configuration for a game.
 
-Includes: [CategoryResolvable](https://github.com/Elitezen/easy-trivia/wiki/Documentation#CategoryResolvable), [QuestionDifficulty](https://github.com/Elitezen/easy-trivia/wiki/Documentation#QuestionDifficulty), [QuestionType](https://github.com/Elitezen/easy-trivia/wiki/Documentation#questiontype)
+Includes: [Question](https://github.com/Elitezen/easy-trivia/wiki/Documentation#question)
 ```ts
 interface TriviaGameOptions {
+  questionData: QuestionData | Question[];
   minimumPlayerCount: number;
   maximumPlayerCount: number;
   timePerQuestion: number;
-  triviaCategory: CategoryResolvable | null;
-  questionAmount: number;
-  questionDifficulty: QuestionDifficulty | null;
-  questionType: QuestionType | null;
   queueTime: number;
   minimumPoints: number;
   maximumPoints: number;
-  timeBetweenRounds: number
+  pointsPerStreakAmount: number;
+  maximumStreakBonus: number;
+  streakDefinitionLevel: number;
+  timeBetweenRounds: number;
 }
 ```
 
@@ -210,6 +289,21 @@ interface TriviaPlayer extends GuildMember {
   correctAnswerStreak: number;
 }
 ```
+
+## `QuestionData`
+Metadata for target questions to fetch.
+
+Includes: [CategoryResolvable](https://github.com/Elitezen/easy-trivia/wiki/Documentation#CategoryResolvable), [QuestionDifficulty](https://github.com/Elitezen/easy-trivia/wiki/Documentation#QuestionDifficulty), [QuestionType](https://github.com/Elitezen/easy-trivia/wiki/Documentation#questiontype)
+
+```ts
+interface QuestionData {
+  category: CategoryResolvable | null;
+  amount: number;
+  difficulty: QuestionDifficulty | null;
+  type: QuestionType | null;
+}
+```
+
 # Bug Reporting
 [View the bug report template](https://github.com/Elitezen/discord-trivia/blob/main/.github/ISSUE_TEMPLATE/bug-report.md)
 

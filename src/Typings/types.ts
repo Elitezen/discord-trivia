@@ -7,6 +7,3 @@ export type TriviaPlayers = Collection<Snowflake, TriviaPlayer>;
 export type TriviaGameState = "pending" | "queue" | "inProgress" | "ended";
 export type TriviaCommandBuilderType = "BUILDER" | "JSON";
 export type TriviaGameOptionKeys = keyof TriviaGameOptions;
-export type LockedOptionApplier = {
-  [key in TriviaGameOptionKeys]: () => void;
-};

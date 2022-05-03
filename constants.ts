@@ -2,6 +2,7 @@ const constants = {
   libraryDefaults: {
     defaultJoinButtonCustomId: 'discord_trivia_join_button',
     defaultStartButtonCustomId: 'discord_trivia_start_button',
+    defaultEmbedImage: 'https://media.discordapp.net/attachments/947636249856999424/947636392450732092/banner.png'
   },
   embeds: {
     author: {

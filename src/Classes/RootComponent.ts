@@ -36,7 +36,6 @@ export default class RootComponent {
   };
 
   constructor(root: Message | CommandInteraction) {
-    console.log(root);
     this.entity = root;
     if ((root as Message).content) {
       this.type = "message";

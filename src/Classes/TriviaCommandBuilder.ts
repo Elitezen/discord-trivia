@@ -1,17 +1,16 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
+import { Question, QuestionDifficulty, QuestionType } from "easy-trivia";
 import {
-  LockedGameOptionsEntry,
+  QuestionData,
   TriviaCommandBuilderOptions,
   TriviaGameOptions,
 } from "../Typings/interfaces";
-import { LockedOptionApplier, TriviaGameOptionKeys } from "../Typings/types";
 import TriviaGame from "./TriviaGame";
 
 export default class TriviaCommandBuilder {
   private build: SlashCommandBuilder;
   public gameOptions: TriviaGameOptions = TriviaGame.defaults;
-  private lockedGameOptionsData: LockedGameOptionsEntry[] = [];
   private isApplied: Boolean = false;
 
   constructor(options?: TriviaCommandBuilderOptions) {
@@ -20,7 +19,7 @@ export default class TriviaCommandBuilder {
       .setDescription(options?.description ?? "Create a trivia game.");
   }
 
-  private optionApplicators: LockedOptionApplier = {
+  private optionApplicators = {
     maximumPlayerCount: () => {
       this.build.addIntegerOption((opt) =>
         opt
@@ -181,27 +180,7 @@ export default class TriviaCommandBuilder {
   };
 
   private applyOptions() {
-    const toApply = Object.keys(TriviaGame.defaults).filter(
-      (optionName) =>
-        !this.lockedGameOptionsData.some(
-          (entry) => entry.optionName == optionName
-        )
-    );
-    toApply.forEach((optionName) => {
-      this.optionApplicators[optionName as TriviaGameOptionKeys]();
-    });
-  }
-
-  lockGameOption(entry: LockedGameOptionsEntry) {
-    this.lockedGameOptionsData.push(entry);
-    return this;
-  }
-
-  lockGameOptions(entries: LockedGameOptionsEntry[]) {
-    entries.forEach((e) => {
-      this.lockedGameOptionsData.push(e);
-    });
-    return this;
+    Object.values(this.optionApplicators).forEach((func) => func());
   }
 
   toJSON() {
@@ -239,22 +218,45 @@ export default class TriviaCommandBuilder {
     const maximumStreakBonus = int.options.getInteger("max_streak_bonus");
     const streakDefinitionLevel = int.options.getInteger("streak_level");
 
-    const options: TriviaGameOptions = Object.assign(TriviaGame.defaults, {
-      maximumPlayerCount,
-      maximumPoints,
-      minimumPlayerCount,
-      minimumPoints,
-      questionAmount,
-      questionDifficulty,
-      questionType,
-      queueTime,
-      timePerQuestion,
-      triviaCategory,
-      timeBetweenRounds,
-      pointsPerStreakAmount,
-      maximumStreakBonus,
-      streakDefinitionLevel,
-    });
+    let options: TriviaGameOptions = {} as TriviaGameOptions;
+    options.maximumPlayerCount =
+      maximumPlayerCount || TriviaGame.defaults.maximumPlayerCount;
+    options.maximumPoints = maximumPoints || TriviaGame.defaults.maximumPoints;
+    options.minimumPlayerCount =
+      minimumPlayerCount || TriviaGame.defaults.minimumPlayerCount;
+    options.minimumPlayerCount =
+      minimumPlayerCount || TriviaGame.defaults.minimumPlayerCount;
+    options.minimumPoints = minimumPoints || TriviaGame.defaults.minimumPoints;
+
+    if (!Array.isArray(options.questionData)) {
+      options.questionData = {} as QuestionData;
+      options.questionData.amount =
+        questionAmount ||
+        (TriviaGame.defaults.questionData as QuestionData).amount;
+      options.questionData.difficulty = (questionDifficulty ||
+        (TriviaGame.defaults.questionData as QuestionData)
+          .difficulty) as QuestionDifficulty;
+      options.questionData.type = (questionType ||
+        (TriviaGame.defaults.questionData as QuestionData)
+          .type) as QuestionType;
+      options.queueTime = queueTime || TriviaGame.defaults.queueTime;
+      options.timePerQuestion =
+        timePerQuestion || TriviaGame.defaults.timePerQuestion;
+      options.questionData.category =
+        triviaCategory ||
+        (TriviaGame.defaults.questionData as QuestionData).category;
+    }
+
+    options.timeBetweenRounds =
+      timeBetweenRounds || TriviaGame.defaults.timeBetweenRounds;
+    options.pointsPerStreakAmount =
+      pointsPerStreakAmount || TriviaGame.defaults.pointsPerStreakAmount;
+    options.maximumStreakBonus =
+      maximumStreakBonus || TriviaGame.defaults.maximumStreakBonus;
+    options.streakDefinitionLevel =
+      streakDefinitionLevel || TriviaGame.defaults.streakDefinitionLevel;
+
+    if (additionalOptions) Object.assign(options, additionalOptions);
 
     return options;
   }

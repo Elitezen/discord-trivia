@@ -5,14 +5,24 @@ import {
   Snowflake,
 } from "discord.js";
 import {
+  CategoryName,
   CategoryResolvable,
+  Question,
   QuestionDifficulty,
   QuestionType,
 } from "easy-trivia";
-import { TriviaCommandBuilderType, TriviaGameOptionKeys } from "./types";
+import { TriviaGameOptionKeys } from "./types";
 
 export interface CanvasGeneratorOptions {
   font: string;
+}
+
+export interface CustomQuestion {
+  value: string;
+  category?: CategoryName<"Strict">;
+  difficulty?: QuestionDifficulty;
+  correctAnswer: string;
+  incorrectAnswers: [string, string, string] | [`${boolean}`];
 }
 
 export interface DiscordTriviaErrorMessages {
@@ -30,7 +40,6 @@ export interface LockedGameOptionsEntry {
 export interface TriviaCommandBuilderOptions {
   name: string;
   description: string;
-  type: TriviaCommandBuilderType;
 }
 
 export interface TriviaGameData {
@@ -44,18 +53,16 @@ export interface ResultPlayerData {
 }
 
 export interface TriviaGameResultData {
+  gameConfiguration: TriviaGameOptions;
   hostMemberId: Snowflake;
   players: ResultPlayerData[];
 }
 
 export interface TriviaGameOptions {
+  questionData: QuestionData | Question[];
   minimumPlayerCount: number;
   maximumPlayerCount: number;
   timePerQuestion: number;
-  triviaCategory: CategoryResolvable | null;
-  questionAmount: number;
-  questionDifficulty: QuestionDifficulty | null;
-  questionType: QuestionType | null;
   queueTime: number;
   minimumPoints: number;
   maximumPoints: number;
@@ -68,6 +75,7 @@ export interface TriviaGameOptions {
 export interface TriviaManagerOptions {
   theme?: ColorResolvable;
   showAnswers?: boolean;
+  image?: string;
 }
 
 export interface TriviaPlayer extends GuildMember {
@@ -75,4 +83,11 @@ export interface TriviaPlayer extends GuildMember {
   hasAnswered: boolean;
   isCorrect: boolean;
   correctAnswerStreak: number;
+}
+
+export interface QuestionData {
+  category: CategoryResolvable | null;
+  amount: number;
+  difficulty: QuestionDifficulty | null;
+  type: QuestionType | null;
 }

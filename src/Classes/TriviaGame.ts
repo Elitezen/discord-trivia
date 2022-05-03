@@ -1,7 +1,5 @@
 import {
   Collection,
-  CollectorFilter,
-  CommandInteraction,
   Guild,
   GuildMember,
   InteractionReplyOptions,
@@ -18,6 +16,7 @@ import {
 } from "easy-trivia";
 import TriviaManager from "./TriviaManager";
 import {
+  QuestionData,
   ResultPlayerData,
   TriviaGameOptions,
   TriviaGameResultData,
@@ -26,7 +25,6 @@ import {
 import EmbedGenerator from "./EmbedGenerator";
 import { TriviaGameState, TriviaPlayers } from "../Typings/types";
 import DiscordTriviaError from "./DiscordTriviaError";
-// import CanvasGenerator from "./CanvasGenerator";
 import {
   buttonRowChoicesBoolean,
   buttonRowChoicesMultiple,
@@ -138,13 +136,15 @@ class TriviaGame extends EventEmitter implements TriviaGame {
   public messages: Collection<string, Message>;
 
   public static readonly defaults: TriviaGameOptions = {
+    questionData: {
+      category: null as unknown as CategoryName,
+      amount: 10,
+      difficulty: null as unknown as QuestionDifficulty,
+      type: null as unknown as QuestionType,
+    },
     minimumPlayerCount: 1,
     maximumPlayerCount: 50,
     timePerQuestion: 20_000,
-    triviaCategory: null as unknown as CategoryName,
-    questionAmount: 10,
-    questionDifficulty: null as unknown as QuestionDifficulty,
-    questionType: null as unknown as QuestionType,
     queueTime: 15_000,
     minimumPoints: 1,
     maximumPoints: 100,
@@ -172,6 +172,9 @@ class TriviaGame extends EventEmitter implements TriviaGame {
     this.options = options
       ? Object.assign(TriviaGame.defaults, options)
       : TriviaGame.defaults;
+    this.options.questionData = options?.questionData
+      ? Object.assign(TriviaGame.defaults.questionData, options.questionData)
+      : TriviaGame.defaults.questionData;
     this.state = "pending";
     this.embeds = new EmbedGenerator(this);
     this.messages = new Collection();
@@ -236,6 +239,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
       };
     });
     const resultData: TriviaGameResultData = {
+      gameConfiguration: this.options,
       hostMemberId: this.hostMember.id,
       players: playerData,
     };
@@ -441,27 +445,31 @@ class TriviaGame extends EventEmitter implements TriviaGame {
    */
   private async initializeGame() {
     if (this.state == "ended") return;
+    const data = this.options.questionData;
 
-    const {
-      questionAmount: amount,
-      questionDifficulty: difficulty,
-      questionType: type,
-      triviaCategory: category,
-    } = this.options;
+    if (typeof data == "object" && !Array.isArray(data) && data !== null) {
+      const {
+        amount: amount,
+        difficulty: difficulty,
+        type: type,
+        category: category,
+      } = this.options.questionData as QuestionData;
 
-    this.updateLeaderboard();
-
-    this.questions = await getQuestions({
-      amount,
-      difficulty: difficulty!,
-      type: type!,
-      category: category!,
-    });
+      this.questions = await getQuestions({
+        amount,
+        difficulty: difficulty!,
+        type: type!,
+        category: category!,
+      });
+    } else {
+      this.questions = this.options.questionData as Question[];
+    }
 
     const msg = await this.channel.send({
       embeds: [this.embeds.gameStart()],
     });
 
+    this.updateLeaderboard();
     this.messages.set(msg.id, msg);
 
     await this.beginGameLoop();
