@@ -1,5 +1,5 @@
 import { ColorResolvable, MessageEmbed } from "discord.js";
-import { Category, Question, CategoryResolvable } from "easy-trivia";
+import { Category, Question, CategoryResolvable } from "open-trivia-db";
 import constants from "../../constants";
 import { QuestionData, TriviaPlayer } from "../Typings/interfaces";
 import TriviaGame from "./TriviaGame";

@@ -10,7 +10,7 @@ import {
   Question,
   QuestionDifficulty,
   QuestionType,
-} from "easy-trivia";
+} from "open-trivia-db";
 import { TriviaGameOptionKeys } from "./types";
 
 export interface CanvasGeneratorOptions {
@@ -19,7 +19,7 @@ export interface CanvasGeneratorOptions {
 
 export interface CustomQuestion {
   value: string;
-  category?: CategoryName<"Strict">;
+  category?: CategoryName<"Pretty">;
   difficulty?: QuestionDifficulty;
   correctAnswer: string;
   incorrectAnswers: [string, string, string] | [`${boolean}`];
@@ -59,7 +59,7 @@ export interface TriviaGameResultData {
 }
 
 export interface TriviaGameOptions {
-  questionData: QuestionData | Question[];
+  questionData: QuestionData | CustomQuestion[];
   minimumPlayerCount: number;
   maximumPlayerCount: number;
   timePerQuestion: number;

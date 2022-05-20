@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
-import { Question, QuestionDifficulty, QuestionType } from "easy-trivia";
+import { Question, QuestionDifficulty, QuestionType } from "open-trivia-db";
 import {
   QuestionData,
   TriviaCommandBuilderOptions,

@@ -1,4 +1,9 @@
-import { Category, EasyTriviaUtil, Question } from "easy-trivia";
+import {
+  Category,
+  CategoryNamePretty,
+  OpenTDBUtil,
+  Question,
+} from "open-trivia-db";
 import { CustomQuestion } from "../Typings/interfaces";
 
 /**
@@ -13,12 +18,12 @@ export default function prepareCustomQuestions(
     const { value, difficulty, correctAnswer, incorrectAnswers, category } = q;
     const parsedQuestion: Question = {
       value,
-      category: Category.strictToPrettyName(category || "GENERAL_KNOWLEDGE")!,
+      category: new Category(category || "general knowledge").strictName,
       type: incorrectAnswers.length == 1 ? "boolean" : "multiple",
       difficulty: difficulty || "medium",
       correctAnswer,
       incorrectAnswers,
-      allAnswers: EasyTriviaUtil.shuffleArray([
+      allAnswers: OpenTDBUtil.shuffleArray([
         correctAnswer,
         ...incorrectAnswers,
       ]),

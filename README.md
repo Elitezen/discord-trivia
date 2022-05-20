@@ -1,20 +1,16 @@
 ﻿![Banner](Images/banner.svg)
 
 # Discord Trivia
-discord-trivia is a NodeJS library which builds on top of [Easy Trivia](https://github.com/Elitezen/easy-trivia) and [Discord.JS](https://github.com/discordjs/discord.js/) to easily integrate trivia matches with your Discord client.
+discord-trivia is a NodeJS library which builds on top of [open-trivia-db](https://github.com/Elitezen/open-trivia-db-wrapper) and [Discord.JS](https://github.com/discordjs/discord.js/) to easily integrate trivia matches with your Discord client.
 
 Stay tuned for discord-fortunes: https://github.com/Elitezen/discord-fortunes
 
-### ⚠️ This project is in beta ⚠️
+## 1.0.1 Patch
+⚙️ Moved from Easy Trivia to [open-trivia-db](https://github.com/Elitezen/open-trivia-db-wrapper)
 
-## Newest Additions
-⭐ Added support for custom questions!
+✔️ Custom Questions are now parsed and prepared under the hood when supplied.
 
-⭐ Added a TriviaCommandBuilder for setting up trivia slash commands!
-
-🛠️ Added ability to edit the default embed image.
-
-🛠️ `TriviaGameOptions#(triviaCategory & questionAmount & questionDifficulty & questionType)` have been grouped into `TriviaGameOptions#questionData` as the shape of [QuestionData](#questiondata).
+🗒️ Updated README to reflect these changes.
 
 ## Installation
 Requires Node v16+ and Discord.JS 13.6.0 or higher
@@ -25,7 +21,7 @@ npm i discord-trivia
 ## Example Usage
 Adjust to your command handler as necessary.
 
-### Using Slash Commands
+### **/** Using Slash Commands
 ```js
 import { TriviaCommandBuilder, TriviaManager } from 'discord-trivia';
 
@@ -47,7 +43,7 @@ module.exports = {
 };
 ```
 
-### Using Messages
+### 💬 Using Messages
 ```js
 import { TriviaManager } from 'discord-trivia';
 
@@ -64,11 +60,11 @@ client.on('messageCreate', message => {
 });
 ```
 
-# Customizable
+# ✨ Customizable
 Discord Trivia Gives you the power to customize your matches as you wish.
 
 ### Questions
-Discord Trivia games are powered by [Easy Trivia](https://github.com/Elitezen/easy-trivia), which is powered by the [Open Trivia Database](https://opentdb.com/) API. You can declare the exact type of questions you wish to be part of a match via [TriviaGameOptions](#triviagameoptions)
+Discord Trivia games are powered by [open-trivia-db](https://github.com/Elitezen/open-trivia-db-wrapper), which is a wrapper for the [Open Trivia Database](https://opentdb.com/) API. You can declare the exact type of questions you wish to be part of a match via [TriviaGameOptions](#triviagameoptions)
 
 ```js
 const game = trivia.createGame(interaction, {
@@ -82,14 +78,14 @@ const game = trivia.createGame(interaction, {
 });
 ```
 
-**Tip**: Install Easy Trivia to your project to recieve tools for OpenTDB, including intellisense on longer OpenTDB category names.
+**Tip**: Install open-trivia-db to your project to recieve tools for OpenTDB, including intellisense on longer OpenTDB category names.
 
 ```
-npm i easy-trivia
+npm i open-trivia-db
 ```
 
 ```js
-import { CategoryNamesStrict } from "easy-trivia";
+import { CategoryNamesStrict } from "open-trivia-db";
 
 const game = trivia.createGame(interaction, {
     questionData: {
@@ -98,15 +94,15 @@ const game = trivia.createGame(interaction, {
 });
 ```
 
-🚨 **Keep in mind**: Easy Trivia only works with ESM import/export syntax.
+🚨 **Keep in mind**: open-trivia-db only works with ESM import/export syntax.
 
-### Custom Questions
+## ⭐ Custom Questions
 Create your own questions and have Discord Trivia serve them.
 
 Your question objects must be in the shape of [CustomQuestion](#customquestion) and be parsed by `prepareCustomQuestions()`
 
 ```js
-const myQuestions:CustomQuestion[] = [
+const myQuestions = [
   {
     value: 'Best Ice Cream Flavor?',
     correctAnswer: 'Shrimp',
@@ -115,11 +111,11 @@ const myQuestions:CustomQuestion[] = [
 ];
 
 const game = trivia.createGame(interaction, {
-  questionData: prepareCustomQuestions(myQuestions)
+  questionData: myQuestions
 });
 ```
 
-### Game Configuration
+### 🛠️ Game Configuration
 Customize lobby restrictions, how your fast game flows and handles awarding points.
 
 ```js
@@ -165,7 +161,7 @@ const trivia = new TriviaManager({
 });
 ```
 
-### Events
+### 🔔 Events
 Execute code when something happens in your match or the state of your match changes.
 
 ```js
@@ -247,7 +243,7 @@ interface TriviaGameResultData {
 ## `TriviaGameOptions`
 The configuration for a game.
 
-Includes: [Question](https://github.com/Elitezen/easy-trivia/wiki/Documentation#question)
+Includes: [Question](https://github.com/Elitezen/open-trivia-db-wrapper/wiki/Documentation#question)
 ```ts
 interface TriviaGameOptions {
   questionData: QuestionData | Question[];
@@ -293,7 +289,7 @@ interface TriviaPlayer extends GuildMember {
 ## `QuestionData`
 Metadata for target questions to fetch.
 
-Includes: [CategoryResolvable](https://github.com/Elitezen/easy-trivia/wiki/Documentation#CategoryResolvable), [QuestionDifficulty](https://github.com/Elitezen/easy-trivia/wiki/Documentation#QuestionDifficulty), [QuestionType](https://github.com/Elitezen/easy-trivia/wiki/Documentation#questiontype)
+Includes: [CategoryResolvable](https://github.com/Elitezen/open-trivia-db-wrapper/wiki/Documentation#CategoryResolvable), [QuestionDifficulty](https://github.com/Elitezen/open-trivia-db-wrapper/wiki/Documentation#QuestionDifficulty), [QuestionType](https://github.com/Elitezen/open-trivia-db-wrapper/wiki/Documentation#questiontype)
 
 ```ts
 interface QuestionData {

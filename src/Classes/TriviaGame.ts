@@ -13,7 +13,7 @@ import {
   Question,
   QuestionDifficulty,
   QuestionType,
-} from "easy-trivia";
+} from "open-trivia-db";
 import TriviaManager from "./TriviaManager";
 import {
   QuestionData,
@@ -33,6 +33,7 @@ import {
 import { promisify } from "util";
 import { EventEmitter } from "stream";
 import RootComponent from "./RootComponent";
+import prepareCustomQuestions from "../Functions/prepareCustomQuestions";
 
 const wait = promisify(setTimeout);
 
@@ -453,7 +454,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
         difficulty: difficulty,
         type: type,
         category: category,
-      } = this.options.questionData as QuestionData;
+      } = data as QuestionData;
 
       this.questions = await getQuestions({
         amount,
@@ -461,8 +462,12 @@ class TriviaGame extends EventEmitter implements TriviaGame {
         type: type!,
         category: category!,
       });
+    } else if (Array.isArray(data)) {
+      this.questions = prepareCustomQuestions(data);
     } else {
-      this.questions = this.options.questionData as Question[];
+      throw new TypeError(
+        `Provided QuestionData must be of type QuestionData | CustomQuestion[], recieved ${typeof data}`
+      );
     }
 
     const msg = await this.channel.send({
