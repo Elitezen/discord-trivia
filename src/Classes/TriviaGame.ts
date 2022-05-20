@@ -31,9 +31,10 @@ import {
   buttonRowQueue,
 } from "../Components/messageActionRows";
 import { promisify } from "util";
-import { EventEmitter } from "stream";
+import { EventEmitter } from "events";
 import RootComponent from "./RootComponent";
 import prepareCustomQuestions from "../Functions/prepareCustomQuestions";
+import * as x from 'discord-api-types/v9';
 
 const wait = promisify(setTimeout);
 
@@ -186,7 +187,9 @@ class TriviaGame extends EventEmitter implements TriviaGame {
     // this.canvas = new CanvasGenerator(this);
   }
 
-  static buttonRows = {
+  // The following error occures without :any
+// The inferred type of 'buttonRows' cannot be named without a reference to 'discord.js/node_modules/discord-api-types/v9'. This is likely not portable. A type annotation is necessary.
+  static buttonRows:any = {
     multiple: buttonRowChoicesMultiple,
     boolean: buttonRowChoicesBoolean,
     queue: buttonRowQueue,

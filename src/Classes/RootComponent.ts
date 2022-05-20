@@ -9,6 +9,13 @@ import {
   TextBasedChannel,
 } from "discord.js";
 
+import * as x from 'discord-api-types/v9';
+
+interface opt {
+  content: string;
+  ephemeral: boolean
+}
+
 export default class RootComponent {
   entity: Message | CommandInteraction;
   type: "message" | "interaction";
@@ -16,20 +23,22 @@ export default class RootComponent {
   guild: Guild;
   hostMember: GuildMember;
   reply = {
-    message: (options: string | MessagePayload | ReplyMessageOptions) => {
+    message: (options: opt) => {
       return this.entity.reply(options);
     },
-    interaction: (options: InteractionReplyOptions) => {
+    interaction: (options: opt) => {
       return this.entity.reply(options);
     },
   };
 
-  followUp = {
-    message: (options: string | MessagePayload | ReplyMessageOptions) => {
+  // The following error occures without ':any'
+  // The inferred type of 'followUp' cannot be named without a reference to 'discord.js/node_modules/discord-api-types/v9'. This is likely not portable. A type annotation is necessary.
+  followUp:any = {
+    message: (options: opt) => {
       return this.entity.reply(options);
     },
     interaction: (
-      options: string | MessagePayload | InteractionReplyOptions
+      options: opt
     ) => {
       return (this.entity as CommandInteraction).followUp(options);
     },
