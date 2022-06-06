@@ -378,7 +378,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
         const answer = (
           question.type == "multiple" ? question.allAnswers : ["False", "True"]
         )[Number(i.customId)];
-        player.isCorrect = question.checkAnswer(answer);
+        player.isCorrect = question.checkAnswer(`${answer}`);
 
         if (player.isCorrect) {
           player.points += this.calculatePoints(timeElapsed);

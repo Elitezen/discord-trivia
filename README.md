@@ -5,17 +5,14 @@ discord-trivia is a NodeJS library which builds on top of [open-trivia-db](https
 
 Stay tuned for discord-fortunes: https://github.com/Elitezen/discord-fortunes
 
-## 1.0.1 Patch
-✔️ Added support for Discord.JS 13.7.0
+Website: https://elitezen.github.io/discord-trivia-website/
 
-⚙️ Moved from Easy Trivia to [open-trivia-db](https://github.com/Elitezen/open-trivia-db-wrapper)
-
-✔️ Custom Questions are now parsed and prepared under the hood when supplied.
-
-🗒️ Updated README to reflect these changes.
+## 1.0.2
+- Updated Discord.JS
+- Updated open-trivia-db
 
 ## Installation
-Requires Node v16+ and Discord.JS 13.6.0 or higher
+Requires Node v16+ and Discord.JS 13.7.0 or higher
 ```
 npm i discord-trivia
 ```
