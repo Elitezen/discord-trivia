@@ -1,6 +1,6 @@
 {
   "name": "discord-trivia",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Easily integrate trivia games into your Discord.JS client with discord-trivia",
   "keywords": [
     "discord",
@@ -39,7 +39,6 @@
   "homepage": "https://github.com/Elitezen/discord-trivia#readme",
   "dependencies": {
     "@discordjs/builders": "^0.12.0",
-    "canvas": "^2.9.0",
     "discord-api-types": "^0.26.1",
     "discord.js": "^13.8.0",
     "open-trivia-db": "^1.0.1"

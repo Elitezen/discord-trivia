@@ -3,13 +3,12 @@
 # Discord Trivia
 discord-trivia is a NodeJS library which builds on top of [open-trivia-db](https://github.com/Elitezen/open-trivia-db-wrapper) and [Discord.JS](https://github.com/discordjs/discord.js/) to easily integrate trivia matches with your Discord client.
 
-Stay tuned for discord-fortunes: https://github.com/Elitezen/discord-fortunes
+Guide: https://dev.to/elitezen/code-fully-fledged-trivia-games-in-discordjs-ge8
 
 Website: https://elitezen.github.io/discord-trivia-website/
 
-## 1.0.2
-- Updated Discord.JS
-- Updated open-trivia-db
+## 1.0.3
+- Removed Uneeded Packages
 
 ## Installation
 Requires Node v16+ and Discord.JS 13.7.0 or higher
