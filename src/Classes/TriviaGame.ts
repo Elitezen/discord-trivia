@@ -13,6 +13,7 @@ import {
   Question,
   QuestionDifficulty,
   QuestionType,
+  OpenTDBUtil,
 } from "open-trivia-db";
 import TriviaManager from "./TriviaManager";
 import {
@@ -465,6 +466,8 @@ class TriviaGame extends EventEmitter implements TriviaGame {
         type: type!,
         category: category!,
       });
+
+      if (data?.customQuestions) this.questions = OpenTDBUtil.shuffleArray([...this.questions, ...prepareCustomQuestions(data.customQuestions)])
     } else if (Array.isArray(data)) {
       this.questions = prepareCustomQuestions(data);
     } else {

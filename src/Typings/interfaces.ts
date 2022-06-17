@@ -90,4 +90,5 @@ export interface QuestionData {
   amount: number;
   difficulty: QuestionDifficulty | null;
   type: QuestionType | null;
+  customQuestions?: CustomQuestion[];
 }

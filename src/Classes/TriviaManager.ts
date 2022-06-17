@@ -178,27 +178,27 @@ export default class TriviaManager {
     validateQuestionAmount(val: unknown) {
       if (!val && val != 0) {
         throw new DiscordTriviaError(
-          `A questionAmount option for TriviaGameOptions is required`,
+          `An amount option for TriviaGameOptions.questionData is required`,
           "MISSING_OPTION"
         );
       } else if (typeof val != "number" && typeof val != "string") {
         throw new DiscordTriviaError(
-          "The questionAmount option for TriviaGameOptions must be of type number or string",
+          "The amount option for TriviaGameOptions.questionData must be of type number or string",
           "INVALID_OPTION"
         );
       } else if (isNaN(+val)) {
         throw new DiscordTriviaError(
-          "The questionAmount option for TriviaGameOptions must be a number resolvable",
+          "The amount option for TriviaGameOptions.questionData must be a number resolvable",
           "INVALID_OPTION"
         );
       } else if (+val % 1 !== 0) {
         throw new DiscordTriviaError(
-          "The questionAmount option for TriviaGameOptions must be a whole integer",
+          "The amount option for TriviaGameOptions.questionData must be a whole integer",
           "INVALID_OPTION"
         );
       } else if (+val < 1) {
         throw new DiscordTriviaError(
-          "The questionAmount option for TriviaGameOptions must be greater than or equal to 1",
+          "The amount option for TriviaGameOptions.questionData must be greater than or equal to 1",
           "INVALID_OPTION"
         );
       }
@@ -209,17 +209,17 @@ export default class TriviaManager {
 
       if (!val) {
         throw new DiscordTriviaError(
-          `A questionDifficulty option for TriviaGameOptions is required`,
+          `A difficulty option for TriviaGameOptions.questionData is required`,
           "MISSING_OPTION"
         );
       } else if (typeof val != "string") {
         throw new DiscordTriviaError(
-          `The questionDifficulty option for TriviaGameOptions must be a string`,
+          `The difficulty option for TriviaGameOptions.questionData must be a string`,
           "INVALID_OPTION"
         );
       } else if (!["easy", "medium", "hard"].includes(val.toLowerCase())) {
         throw new DiscordTriviaError(
-          `Supplied questionDifficulty option (${val}) is not a questionDifficulty resolvable`,
+          `Supplied difficulty option (${val}) is not a difficulty resolvable`,
           "INVALID_OPTION"
         );
       }
@@ -230,17 +230,17 @@ export default class TriviaManager {
 
       if (!val) {
         throw new DiscordTriviaError(
-          `A questionType option for TriviaGameOptions is required`,
+          `A type option for TriviaGameOptions.questionData is required`,
           "MISSING_OPTION"
         );
       } else if (typeof val != "string") {
         throw new DiscordTriviaError(
-          `The questionType option for TriviaGameOptions must be a string`,
+          `The type option for TriviaGameOptions.questionData must be a string`,
           "INVALID_OPTION"
         );
       } else if (!["multiple", "boolean"].includes(val.toLowerCase())) {
         throw new DiscordTriviaError(
-          `Supplied questionType option (${val}) is not a questionType resolvable`,
+          `Supplied type option (${val}) is not a type resolvable`,
           "INVALID_OPTION"
         );
       }

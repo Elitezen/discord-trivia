@@ -1,4 +1,3 @@
-// import CanvasGenerator from "./src/Classes/CanvasGenerator";
 import DiscordTriviaError from "./src/Classes/DiscordTriviaError";
 import EmbedGenerator from "./src/Classes/EmbedGenerator";
 import TriviaCommandBuilder from "./src/Classes/TriviaCommandBuilder";
@@ -7,7 +6,6 @@ import TriviaManager from "./src/Classes/TriviaManager";
 import prepareCustomQuestions from "./src/Functions/prepareCustomQuestions";
 
 import {
-  CanvasGeneratorOptions,
   DiscordTriviaErrorMessages,
   LockedGameOptionsEntry,
   TriviaCommandBuilderOptions,
@@ -28,14 +26,12 @@ import {
 } from './src/Typings/types';
 
 export {
-  // CanvasGenerator,
   DiscordTriviaError,
   EmbedGenerator,
   TriviaCommandBuilder,
   TriviaGame,
   TriviaManager,
   prepareCustomQuestions,
-  CanvasGeneratorOptions,
   DiscordTriviaErrorMessages,
   LockedGameOptionsEntry,
   TriviaCommandBuilderOptions,

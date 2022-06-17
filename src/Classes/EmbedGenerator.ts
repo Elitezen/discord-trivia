@@ -178,12 +178,12 @@ export default class EmbedGenerator {
       .addFields(
         {
           name: "Category",
-          value: question.category,
+          value: question.category || 'Custom',
           inline: true,
         },
         {
           name: "Difficulty",
-          value: question.difficulty,
+          value: question.difficulty || 'Custom',
           inline: true,
         },
         {

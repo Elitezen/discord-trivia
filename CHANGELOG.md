@@ -1,3 +1,14 @@
+## 1.1.0
+- Added the ability to mix custom questions with API ones
+- Fixed empty field values bug when using custom questions
+
+## 1.0.3
+- Removed Canvas package to avoid installation errors
+
+## 1.0.2 Patch
+- Updated Discord.JS
+- Updated open-trivia-db
+
 ## 1.0.1 Patch
 ✔️ Added support for Discord.JS 13.7.0
 
