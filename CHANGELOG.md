@@ -1,6 +1,7 @@
 ## 1.1.0
 - Added the ability to mix custom questions with API ones
 - Fixed empty field values bug when using custom questions
+- Removed Node Canvas references
 
 ## 1.0.3
 - Removed Canvas package to avoid installation errors

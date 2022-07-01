@@ -7,8 +7,11 @@ Guide: https://dev.to/elitezen/code-fully-fledged-trivia-games-in-discordjs-ge8
 
 Website: https://elitezen.github.io/discord-trivia-website/
 
-## 1.0.3
-- Removed Uneeded Packages
+## 1.1.0
+- 🌟Added the ability to mix custom questions with API ones
+- 🛠️Fixed empty field values bug when using custom questions
+- Removed Node Canvas references
+
 
 ## Installation
 Requires Node v16+ and Discord.JS 13.7.0 or higher
@@ -110,6 +113,18 @@ const myQuestions = [
 
 const game = trivia.createGame(interaction, {
   questionData: myQuestions
+});
+```
+
+### Mixing Custom and API Questions
+```js
+const game = trivia.createGame(interaction, {
+  questionData: {
+    category: 'general',
+    amount: 3,
+    difficulty: 'easy',
+    customQuestions: myQuestions
+  }
 });
 ```
 
