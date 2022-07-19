@@ -1,4 +1,4 @@
-import { Collection, CommandInteraction, Message } from "discord.js";
+import { ChannelType, Collection, CommandInteraction, InteractionType, Message } from "discord.js";
 import { TriviaGameOptions, TriviaManagerOptions } from "../Typings/interfaces";
 import { TriviaManagerGames } from "../Typings/types";
 import DiscordTriviaError from "./DiscordTriviaError";
@@ -13,7 +13,7 @@ export default class TriviaManager {
   public readonly games: TriviaManagerGames = new Collection();
   public readonly options: TriviaManagerOptions;
   public static readonly defaults: TriviaManagerOptions = {
-    theme: "BLURPLE",
+    theme: 'Blurple',
     showAnswers: true,
     image: constants.libraryDefaults.defaultEmbedImage,
   };
@@ -36,7 +36,7 @@ export default class TriviaManager {
     const component = new RootComponent(root);
 
     if (component.type == "interaction") {
-      if (!(component.entity as CommandInteraction).isCommand()) {
+      if (component.entity.type !== InteractionType.ApplicationCommand) {
         throw new DiscordTriviaError(
           "Supplied interaction must be a CommandInteraction",
           "INVALID_INTERACTION"
@@ -63,7 +63,7 @@ export default class TriviaManager {
       } else if (game.channel === null) {
         const { message, header } = DiscordTriviaError.errors.channelNullish;
         throw new DiscordTriviaError(message, header);
-      } else if (!game.channel.isText()) {
+      } else if (game.channel.type !== ChannelType.GuildText) {
         const { message, header } = DiscordTriviaError.errors.channelNonText;
         throw new DiscordTriviaError(message, header);
       }

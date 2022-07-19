@@ -7,16 +7,22 @@ Guide: https://dev.to/elitezen/code-fully-fledged-trivia-games-in-discordjs-ge8
 
 Website: https://elitezen.github.io/discord-trivia-website/
 
-## 1.1.0
-- 🌟Added the ability to mix custom questions with API ones
-- 🛠️Fixed empty field values bug when using custom questions
-- Removed Node Canvas references
+## 1.2.0 (Breaking Change)
+- Updated module to work with Discord.JS v14. **USE 1.1.0 for v13**
+- Module now compiles to ES2016
 
 
 ## Installation
-Requires Node v16+ and Discord.JS 13.7.0 or higher
+Requires Discord.JS v14
+
 ```
 npm i discord-trivia
+```
+
+For **Discord.JS v13**
+
+```
+npm i discord-trivia@1.1.0
 ```
 
 ## Example Usage
@@ -29,7 +35,7 @@ import { TriviaCommandBuilder, TriviaManager } from 'discord-trivia';
 const cmd = new TriviaCommandBuilder();
 
 const trivia = new TriviaManager({
-  theme: 'RED'
+  theme: 'Red'
 });
 
 module.exports = {
@@ -153,7 +159,7 @@ Edit the color of the embeds via [TriviaManagerOptions](documentation#interfaces
 
 ```js
 const redTrivia = new TriviaManager({
-  theme: 'RED'
+  theme: 'Red'
 });
 
 const blueTrivia = new TriviaManager({
@@ -161,7 +167,7 @@ const blueTrivia = new TriviaManager({
 });
 
 const randomColorTrivia = new TriviaManager({
-  theme: 'RANDOM'
+  theme: 'Random'
 });
 ```
 

@@ -1,4 +1,4 @@
-import { ColorResolvable, MessageEmbed } from "discord.js";
+import { ColorResolvable, EmbedBuilder } from "discord.js";
 import { Category, Question, CategoryResolvable } from "open-trivia-db";
 import constants from "../../constants";
 import { QuestionData, TriviaPlayer } from "../Typings/interfaces";
@@ -10,11 +10,11 @@ export default class EmbedGenerator {
 
   constructor(game: TriviaGame) {
     this.game = game;
-    this.theme = game.manager.options.theme || "BLURPLE";
+    this.theme = game.manager.options.theme || "Blurple";
   }
 
   gameQueueStart() {
-    return new MessageEmbed()
+    return new EmbedBuilder()
       .setTitle(
         `${this.game.hostMember.displayName} is starting a Trivia Game!`
       )
@@ -66,7 +66,7 @@ export default class EmbedGenerator {
         .join("\n");
     }
 
-    return new MessageEmbed()
+    return new EmbedBuilder()
       .setTitle("Trivia Game is now starting!")
       .setThumbnail(
         "https://cdn.discordapp.com/attachments/947636249856999424/947636392673038336/icon.png"
@@ -84,7 +84,7 @@ export default class EmbedGenerator {
   }
 
   leaderboardUpdate(question: Question) {
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setAuthor(constants.embeds.author)
       .setTitle("Leaderboard")
       .setThumbnail(
@@ -155,7 +155,7 @@ export default class EmbedGenerator {
       .first(3)
       .map((m, i) => `${medals[i]} ${m.toString()} ${m.points}`)
       .join("\n");
-    return new MessageEmbed()
+    return new EmbedBuilder()
       .setAuthor(constants.embeds.author)
       .setTitle("Game Has Ended")
       .setThumbnail(
@@ -169,7 +169,7 @@ export default class EmbedGenerator {
   }
 
   question(question: Question) {
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
       .setAuthor(constants.embeds.author)
       .setTitle("New Question")
       .setThumbnail(
@@ -201,7 +201,9 @@ export default class EmbedGenerator {
         })
         .join("\n");
 
-      embed.addField("Choices", choices);
+      embed.addFields([
+        { name: 'Choices', value: choices }
+      ]);
     }
 
     return embed;

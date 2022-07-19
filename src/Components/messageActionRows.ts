@@ -1,64 +1,64 @@
-import { MessageActionRow, MessageButton } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 
 // The following errors occure without :any
 // The inferred type of '...' cannot be named without a reference to 'discord.js/node_modules/discord-api-types/v9'. This is likely not portable. A type annotation is necessary.
-const buttonRowChoicesMultiple:any = new MessageActionRow().addComponents([
-  new MessageButton().setCustomId("0").setLabel("A").setStyle("PRIMARY"),
-  new MessageButton().setCustomId("1").setLabel("B").setStyle("PRIMARY"),
-  new MessageButton().setCustomId("2").setLabel("C").setStyle("PRIMARY"),
-  new MessageButton().setCustomId("3").setLabel("D").setStyle("PRIMARY"),
+const buttonRowChoicesMultiple:any = new ActionRowBuilder().addComponents([
+  new ButtonBuilder().setCustomId("0").setLabel("A").setStyle(ButtonStyle.Primary),
+  new ButtonBuilder().setCustomId("1").setLabel("B").setStyle(ButtonStyle.Primary),
+  new ButtonBuilder().setCustomId("2").setLabel("C").setStyle(ButtonStyle.Primary),
+  new ButtonBuilder().setCustomId("3").setLabel("D").setStyle(ButtonStyle.Primary),
 ]);
 
-const buttonRowChoicesBoolean:any = new MessageActionRow().addComponents([
-  new MessageButton().setCustomId("1").setLabel("True").setStyle("PRIMARY"),
-  new MessageButton().setCustomId("0").setLabel("False").setStyle("DANGER"),
+const buttonRowChoicesBoolean:any = new ActionRowBuilder().addComponents([
+  new ButtonBuilder().setCustomId("1").setLabel("True").setStyle(ButtonStyle.Primary),
+  new ButtonBuilder().setCustomId("0").setLabel("False").setStyle(ButtonStyle.Danger),
 ]);
 
-const buttonRowQueue:any = new MessageActionRow().addComponents([
-  new MessageButton().setCustomId("1").setLabel("Join").setStyle("SUCCESS"),
+const buttonRowQueue:any = new ActionRowBuilder().addComponents([
+  new ButtonBuilder().setCustomId("1").setLabel("Join").setStyle(ButtonStyle.Success),
 ]);
 
-const buttonRowChoicesMultipleDisabled = new MessageActionRow().addComponents([
-  new MessageButton()
+const buttonRowChoicesMultipleDisabled = new ActionRowBuilder().addComponents([
+  new ButtonBuilder()
     .setCustomId("0")
     .setLabel("A")
-    .setStyle("PRIMARY")
+    .setStyle(ButtonStyle.Primary)
     .setDisabled(true),
-  new MessageButton()
+  new ButtonBuilder()
     .setCustomId("1")
     .setLabel("B")
-    .setStyle("PRIMARY")
+    .setStyle(ButtonStyle.Primary)
     .setDisabled(true),
-  new MessageButton()
+  new ButtonBuilder()
     .setCustomId("2")
     .setLabel("C")
-    .setStyle("PRIMARY")
+    .setStyle(ButtonStyle.Primary)
     .setDisabled(true),
-  new MessageButton()
+  new ButtonBuilder()
     .setCustomId("3")
     .setLabel("D")
-    .setStyle("PRIMARY")
+    .setStyle(ButtonStyle.Primary)
     .setDisabled(true),
 ]);
 
-const buttonRowChoicesBooleanDisabled = new MessageActionRow().addComponents([
-  new MessageButton()
+const buttonRowChoicesBooleanDisabled = new ActionRowBuilder().addComponents([
+  new ButtonBuilder()
     .setCustomId("1")
     .setLabel("True")
-    .setStyle("PRIMARY")
+    .setStyle(ButtonStyle.Primary)
     .setDisabled(true),
-  new MessageButton()
+  new ButtonBuilder()
     .setCustomId("0")
     .setLabel("False")
-    .setStyle("DANGER")
+    .setStyle(ButtonStyle.Danger)
     .setDisabled(true),
 ]);
 
-const buttonRowQueueDisabled = new MessageActionRow().addComponents([
-  new MessageButton()
+const buttonRowQueueDisabled = new ActionRowBuilder().addComponents([
+  new ButtonBuilder()
     .setCustomId("1")
     .setLabel("Join")
-    .setStyle("SUCCESS")
+    .setStyle(ButtonStyle.Success)
     .setDisabled(true),
 ]);
 
