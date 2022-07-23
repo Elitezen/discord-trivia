@@ -1,3 +1,6 @@
+## 1.2.1 
+- Fixed typo where options for difficulty option in TriviaCommandBuilder were all "Easy"
+
 ## 1.2.0 (Breaking Change)
 - Updated module to work with Discord.JS v14. **USE 1.1.0 for v13**
 - Module now compiles to ES2016

@@ -1,6 +1,6 @@
 {
   "name": "discord-trivia",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Easily integrate trivia games into your Discord.JS client with discord-trivia",
   "keywords": [
     "discord",

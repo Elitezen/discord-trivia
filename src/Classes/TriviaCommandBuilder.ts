@@ -75,8 +75,8 @@ export default class TriviaCommandBuilder {
           .setDescription("The difficulty all questions should be")
           .addChoices(
             { name: "Easy", value: 'easy' },
-            { name: "Easy", value: 'easy' },
-            { name: "Easy", value: 'easy' }
+            { name: "Medium", value: 'medium' },
+            { name: "Hard", value: 'hard' }
           )
           .setRequired(false)
       );
