@@ -1,3 +1,10 @@
+# CHANGELOG
+
+## 1.2.2
+- Many bug fixes regarding the converstion to DJS v14.
+- Fixed error of requiring optional QuestionData options when 1 other option was provided.
+- Changed RootComponent to utilize DJS's Enums.
+
 ## 1.2.1 
 - Fixed typo where options for difficulty option in TriviaCommandBuilder were all "Easy"
 

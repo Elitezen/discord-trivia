@@ -7,9 +7,11 @@ Guide: https://dev.to/elitezen/code-fully-fledged-trivia-games-in-discordjs-ge8
 
 Website: https://elitezen.github.io/discord-trivia-website/
 
-## 1.2.0 (Breaking Change)
-- Updated module to work with Discord.JS v14. **USE 1.1.0 for v13**
-- Module now compiles to ES2016
+
+## 1.2.2
+- Many bug fixes regarding the converstion to DJS v14.
+- Fixed error of requiring optional QuestionData options when 1 other option was provided.
+- Changed RootComponent to utilize DJS's Enums.
 
 
 ## Installation

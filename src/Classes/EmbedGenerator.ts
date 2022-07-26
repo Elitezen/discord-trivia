@@ -15,7 +15,8 @@ export default class EmbedGenerator {
 
   gameQueueStart() {
     return new EmbedBuilder()
-      .setTitle(
+      .setTitle('Disord Trivia')
+      .setDescription(
         `${this.game.hostMember.displayName} is starting a Trivia Game!`
       )
       .setColor(this.theme)

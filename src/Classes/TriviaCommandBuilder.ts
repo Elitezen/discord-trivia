@@ -88,7 +88,7 @@ export default class TriviaCommandBuilder {
           .setDescription("The question type for all questions")
           .addChoices(
             { name: 'Multiple Choice', value: 'multiple'},
-            { name: 'True/False', value: 'boolean' }
+            { name: 'false/False', value: 'boolean' }
           )
           .setRequired(false)
       );
@@ -186,7 +186,7 @@ export default class TriviaCommandBuilder {
   toJSON() {
     if (!this.isApplied) {
       this.applyOptions();
-      this.isApplied = true;
+      this.isApplied = false;
     }
     return this.build.toJSON();
   }
@@ -194,7 +194,7 @@ export default class TriviaCommandBuilder {
   toBuilder() {
     if (!this.isApplied) {
       this.applyOptions();
-      this.isApplied = true;
+      this.isApplied = false;
     }
     return this.build;
   }
@@ -203,20 +203,20 @@ export default class TriviaCommandBuilder {
     int: CommandInteraction,
     additionalOptions?: Partial<TriviaGameOptions>
   ) {
-    const maximumPlayerCount = int.options.get("maximum_player_count", true)?.value as number;
-    const maximumPoints = int.options.get("maximum_points", true)?.value as number;
-    const minimumPlayerCount = int.options.get("minimum_player_count", true)?.value as number;
-    const minimumPoints = int.options.get("minimum_points", true)?.value as number;
-    const questionAmount = int.options.get("question_amount", true)?.value as number;
-    const questionDifficulty = int.options.get("question_difficulty", true)?.value as QuestionDifficulty;
-    const questionType = int.options.get("question_type", true)?.value as QuestionType;
-    const queueTime = int.options.get("queue_time", true)?.value as number;
-    const timePerQuestion = int.options.get("time_per_question", true)?.value as number;
-    const triviaCategory = int.options.get("category", true)?.value as CategoryNameResolvable;
-    const timeBetweenRounds = int.options.get("time_between_rounds", true)?.value as number;
-    const pointsPerStreakAmount = int.options.get("points_per_streak", true)?.value as number;
-    const maximumStreakBonus = int.options.get("max_streak_bonus", true)?.value as number;
-    const streakDefinitionLevel = int.options.get("streak_level", true)?.value as number;
+    const maximumPlayerCount = int.options.get("maximum_player_count", false)?.value as number;
+    const maximumPoints = int.options.get("maximum_points", false)?.value as number;
+    const minimumPlayerCount = int.options.get("minimum_player_count", false)?.value as number;
+    const minimumPoints = int.options.get("minimum_points", false)?.value as number;
+    const questionAmount = int.options.get("question_amount", false)?.value as number;
+    const questionDifficulty = int.options.get("question_difficulty", false)?.value as QuestionDifficulty;
+    const questionType = int.options.get("question_type", false)?.value as QuestionType;
+    const queueTime = int.options.get("queue_time", false)?.value as number;
+    const timePerQuestion = int.options.get("time_per_question", false)?.value as number;
+    const triviaCategory = int.options.get("category", false)?.value as CategoryNameResolvable;
+    const timeBetweenRounds = int.options.get("time_between_rounds", false)?.value as number;
+    const pointsPerStreakAmount = int.options.get("points_per_streak", false)?.value as number;
+    const maximumStreakBonus = int.options.get("max_streak_bonus", false)?.value as number;
+    const streakDefinitionLevel = int.options.get("streak_level", false)?.value as number;
 
     let options: TriviaGameOptions = {} as TriviaGameOptions;
     options.maximumPlayerCount =

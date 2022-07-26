@@ -1,11 +1,13 @@
 import {
   Collection,
+  EmbedBuilder,
   Guild,
   GuildMember,
   InteractionReplyOptions,
   Message,
   MessageComponentInteraction,
   TextBasedChannel,
+  TextChannel,
 } from "discord.js";
 import {
   getQuestions,
@@ -79,7 +81,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
    * The text channel this game was initiated in.
    * @readonly
    */
-  public readonly channel: TextBasedChannel;
+  public readonly channel: TextChannel;
 
   /**
    * The guild this game was initiated in.
@@ -166,18 +168,16 @@ class TriviaGame extends EventEmitter implements TriviaGame {
 
     this.manager = manager;
     this.component = component;
-    this.channel = component.channel as TextBasedChannel;
+    this.channel = component.channel as TextChannel;
     this.guild = component.guild as Guild;
     this.players = new Collection();
     this.questions = [];
     this.hostMember = component.hostMember as GuildMember;
     this.leaderboard = new Collection();
+    this.options = {} as TriviaGameOptions
     this.options = options
       ? Object.assign(TriviaGame.defaults, options)
       : TriviaGame.defaults;
-    this.options.questionData = options?.questionData
-      ? Object.assign(TriviaGame.defaults.questionData, options.questionData)
-      : TriviaGame.defaults.questionData;
     this.state = "pending";
     this.embeds = new EmbedGenerator(this);
     this.messages = new Collection();
@@ -185,12 +185,9 @@ class TriviaGame extends EventEmitter implements TriviaGame {
     setImmediate(() => {
       this.emit("pending");
     });
-    // this.canvas = new CanvasGenerator(this);
   }
 
-  // The following error occures without :any
-// The inferred type of 'buttonRows' cannot be named without a reference to 'discord.js/node_modules/discord-api-types/v9'. This is likely not portable. A type annotation is necessary.
-  static buttonRows:any = {
+  static buttonRows = {
     multiple: buttonRowChoicesMultiple,
     boolean: buttonRowChoicesBoolean,
     queue: buttonRowQueue,
@@ -202,6 +199,13 @@ class TriviaGame extends EventEmitter implements TriviaGame {
   start(): Promise<void> {
     return new Promise(async (resolve, reject) => {
       if (this.state == "ended") return;
+      
+      this.options.questionData = Object.assign({
+        category: null as unknown as CategoryName,
+        amount: 10,
+        difficulty: null as unknown as QuestionDifficulty,
+        type: null as unknown as QuestionType,
+      }, this.options.questionData)
 
       try {
         this.manager.validator.validateDiscordStructures(this);
@@ -209,7 +213,6 @@ class TriviaGame extends EventEmitter implements TriviaGame {
         this.manager.games.set(this.channel.id, this);
 
         await this.startComponentCollector();
-
         await this.component.reply[this.component.type]({
           content: "Game has started. Click the join button to enter",
           ephemeral: true,
@@ -281,7 +284,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
     }
 
     const msg1 = await this.channel.send({
-      embeds: [this.embeds.finalLeaderboard()],
+      embeds: [this.embeds.finalLeaderboard().toJSON()],
     });
 
     this.messages.set(msg1.id, msg1);
@@ -344,8 +347,8 @@ class TriviaGame extends EventEmitter implements TriviaGame {
       if (this.state == "ended") return;
 
       const msg = await this.channel.send({
-        embeds: [this.embeds.question(question)],
-        components: [TriviaGame.buttonRows[question.type]],
+        embeds: [this.embeds.question(question).toJSON()],
+        components: [TriviaGame.buttonRows[question.type].toJSON()],
       });
 
       this.messages.set(msg.id, msg);
@@ -428,7 +431,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
           .forEach((p) => (p.correctAnswerStreak = 0));
 
         const msg2 = await this.channel.send({
-          embeds: [this.embeds.leaderboardUpdate(question)],
+          embeds: [this.embeds.leaderboardUpdate(question).toJSON()],
         });
 
         setTimeout(() => {
@@ -477,7 +480,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
     }
 
     const msg = await this.channel.send({
-      embeds: [this.embeds.gameStart()],
+      embeds: [this.embeds.gameStart().toJSON()],
     });
 
     this.updateLeaderboard();
@@ -492,8 +495,8 @@ class TriviaGame extends EventEmitter implements TriviaGame {
    */
   private async startComponentCollector() {
     const msg = await this.channel.send({
-      embeds: [this.embeds.gameQueueStart()],
-      components: [TriviaGame.buttonRows.queue],
+      embeds: [this.embeds.gameQueueStart().toJSON()],
+      components: [TriviaGame.buttonRows.queue.toJSON()],
     });
 
     this.messages.set(msg.id, msg);

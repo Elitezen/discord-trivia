@@ -3,6 +3,7 @@ import {
   Guild,
   GuildMember,
   InteractionReplyOptions,
+  InteractionType,
   Message,
   MessagePayload,
   ReplyMessageOptions,
@@ -18,15 +19,15 @@ interface opt {
 
 export default class RootComponent {
   entity: Message | CommandInteraction;
-  type: "message" | "interaction";
+  type: InteractionType.MessageComponent | InteractionType.ApplicationCommand;
   channel: TextBasedChannel;
   guild: Guild;
   hostMember: GuildMember;
   reply = {
-    message: (options: opt) => {
+    [InteractionType.MessageComponent]: (options: opt) => {
       return this.entity.reply(options);
     },
-    interaction: (options: opt) => {
+    [InteractionType.ApplicationCommand]: (options: opt) => {
       return this.entity.reply(options);
     },
   };
@@ -34,10 +35,10 @@ export default class RootComponent {
   // The following error occures without ':any'
   // The inferred type of 'followUp' cannot be named without a reference to 'discord.js/node_modules/discord-api-types/v9'. This is likely not portable. A type annotation is necessary.
   followUp:any = {
-    message: (options: opt) => {
+    [InteractionType.MessageComponent]: (options: opt) => {
       return this.entity.reply(options);
     },
-    interaction: (
+    [InteractionType.ApplicationCommand]: (
       options: opt
     ) => {
       return (this.entity as CommandInteraction).followUp(options);
@@ -47,9 +48,9 @@ export default class RootComponent {
   constructor(root: Message | CommandInteraction) {
     this.entity = root;
     if ((root as Message).content) {
-      this.type = "message";
+      this.type = InteractionType.MessageComponent;
     } else if ((root as CommandInteraction).applicationId) {
-      this.type = "interaction";
+      this.type = InteractionType.ApplicationCommand;
     } else {
       throw new TypeError(
         `root argument must be of type Message or CommandInteraction`

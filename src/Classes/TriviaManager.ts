@@ -35,21 +35,14 @@ export default class TriviaManager {
   ): TriviaGame {
     const component = new RootComponent(root);
 
-    if (component.type == "interaction") {
-      if (component.entity.type !== InteractionType.ApplicationCommand) {
-        throw new DiscordTriviaError(
-          "Supplied interaction must be a CommandInteraction",
-          "INVALID_INTERACTION"
-        );
-      } else if (this.games.has(component.channel.id)) {
-        const errorMessage = "There's already an ongoing game in this channel";
-        component.reply["interaction"]({
-          content: errorMessage,
-          ephemeral: true,
-        });
+    if (this.games.has(component.channel.id)) {
+      const errorMessage = "There's already an ongoing game in this channel";
+      component.reply[component.type]({
+        content: errorMessage,
+        ephemeral: true,
+      });
 
-        throw new DiscordTriviaError(errorMessage, "ONGOING_GAME");
-      }
+      throw new DiscordTriviaError(errorMessage, "ONGOING_GAME");
     }
 
     return new TriviaGame(component, this, options);
@@ -63,7 +56,8 @@ export default class TriviaManager {
       } else if (game.channel === null) {
         const { message, header } = DiscordTriviaError.errors.channelNullish;
         throw new DiscordTriviaError(message, header);
-      } else if (game.channel.type !== ChannelType.GuildText) {
+      } else if ((game.channel.type as unknown as string) != 'GUILD_TEXT') {
+        // game.channel.type (:ChannelType.GuildText) != ChannelType.GuildText always returns true
         const { message, header } = DiscordTriviaError.errors.channelNonText;
         throw new DiscordTriviaError(message, header);
       }
@@ -349,10 +343,12 @@ export default class TriviaManager {
 
         this.checkPointRangeRelation(obj.minimumPoints!, obj.maximumPoints!);
 
+        const { difficulty, amount, type } = obj.questionData;
+
         this.validateTimePerQuestion(obj.timePerQuestion);
-        this.validateQuestionDifficulty(obj.questionData.difficulty);
-        this.validateQuestionAmount(obj.questionData.amount);
-        this.validateQuestionType(obj.questionData.type);
+        difficulty !== null &&  this.validateQuestionDifficulty(difficulty);
+        this.validateQuestionAmount(amount);
+        type !== null &&  this.validateQuestionType(type);
         this.validateQueueTime(obj.queueTime);
         this.validatePointsPerStreakAmount(obj.pointsPerStreakAmount);
         this.validateMaximumStreakBonus(obj.maximumStreakBonus);
