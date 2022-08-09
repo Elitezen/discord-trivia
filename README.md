@@ -8,10 +8,9 @@ Guide: https://dev.to/elitezen/code-fully-fledged-trivia-games-in-discordjs-ge8
 Website: https://elitezen.github.io/discord-trivia-website/
 
 
-## 1.2.2
-- Many bug fixes regarding the converstion to DJS v14.
-- Fixed error of requiring optional QuestionData options when 1 other option was provided.
-- Changed RootComponent to utilize DJS's Enums.
+## 1.2.3
+- Fixed issue of GUILD_NON_TEXT in text channels.
+- Addressed issue of games now being able to start with 0 players.
 
 
 ## Installation

@@ -1,6 +1,11 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
-import { CategoryNameResolvable, Question, QuestionDifficulty, QuestionType } from "open-trivia-db";
+import {
+  CategoryNameResolvable,
+  Question,
+  QuestionDifficulty,
+  QuestionType,
+} from "open-trivia-db";
 import {
   QuestionData,
   TriviaCommandBuilderOptions,
@@ -74,9 +79,9 @@ export default class TriviaCommandBuilder {
           .setName("question_difficulty")
           .setDescription("The difficulty all questions should be")
           .addChoices(
-            { name: "Easy", value: 'easy' },
-            { name: "Medium", value: 'medium' },
-            { name: "Hard", value: 'hard' }
+            { name: "Easy", value: "easy" },
+            { name: "Medium", value: "medium" },
+            { name: "Hard", value: "hard" }
           )
           .setRequired(false)
       );
@@ -87,8 +92,8 @@ export default class TriviaCommandBuilder {
           .setName("question_type")
           .setDescription("The question type for all questions")
           .addChoices(
-            { name: 'Multiple Choice', value: 'multiple'},
-            { name: 'false/False', value: 'boolean' }
+            { name: "Multiple Choice", value: "multiple" },
+            { name: "false/False", value: "boolean" }
           )
           .setRequired(false)
       );
@@ -115,34 +120,34 @@ export default class TriviaCommandBuilder {
           .setName("category")
           .setDescription("The category for the questions")
           .addChoices(
-            {name: "General Knowledge", "value":"9" }, 
-            {name: "Entertainment: Books", "value":"10" }, 
-            {name: "Entertainment: Film", "value":"11" }, 
-            {name: "Entertainment: Music", "value":"12" }, 
-            {name: "Entertainment: Musicals and Theatres", "value":"13" }, 
-            {name: "Entertainment: Television", "value":"14" }, 
-            {name: "Entertainment: Video Games", "value":"15" }, 
-            {name: "Entertainment: Board Games", "value":"16" }, 
-            {name: "Science and Nature", "value":"17" }, 
-            {name: "Science: Computers", "value":"18" }, 
-            {name: "Science Mathematics", "value":"19" }, 
-            {name: "Mythology", "value":"20" }, 
-            {name: "Sports", "value":"21" }, 
-            {name: "Geography", "value":"22" }, 
-            {name: "History", "value":"23" }, 
-            {name: "Politics", "value":"24" }, 
-            {name: "Art", "value":"25" }, 
-            {name: "Celebrities", "value":"26" }, 
-            {name: "Animals", "value":"27" }, 
-            {name: "Vehicles", "value":"28" }, 
-            {name: "Entertainment: Comics", "value":"29" }, 
-            {name: "Science: Gadgets", "value":"30" }, 
-            {name: "Entertainment: Japanese Anime and Manga", "value":"31" }, 
-            {name: "Entertainment: Cartoon and Animations", "value":"32" }
+            { name: "General Knowledge", value: "9" },
+            { name: "Entertainment: Books", value: "10" },
+            { name: "Entertainment: Film", value: "11" },
+            { name: "Entertainment: Music", value: "12" },
+            { name: "Entertainment: Musicals and Theatres", value: "13" },
+            { name: "Entertainment: Television", value: "14" },
+            { name: "Entertainment: Video Games", value: "15" },
+            { name: "Entertainment: Board Games", value: "16" },
+            { name: "Science and Nature", value: "17" },
+            { name: "Science: Computers", value: "18" },
+            { name: "Science Mathematics", value: "19" },
+            { name: "Mythology", value: "20" },
+            { name: "Sports", value: "21" },
+            { name: "Geography", value: "22" },
+            { name: "History", value: "23" },
+            { name: "Politics", value: "24" },
+            { name: "Art", value: "25" },
+            { name: "Celebrities", value: "26" },
+            { name: "Animals", value: "27" },
+            { name: "Vehicles", value: "28" },
+            { name: "Entertainment: Comics", value: "29" },
+            { name: "Science: Gadgets", value: "30" },
+            { name: "Entertainment: Japanese Anime and Manga", value: "31" },
+            { name: "Entertainment: Cartoon and Animations", value: "32" }
           )
           .setRequired(false)
       );
-     },
+    },
     timeBetweenRounds: () => {
       this.build.addIntegerOption((opt) =>
         opt
@@ -150,7 +155,7 @@ export default class TriviaCommandBuilder {
           .setDescription("How long to wait between rounds in ms")
           .setRequired(false)
       );
-     },
+    },
     pointsPerStreakAmount: () => {
       this.build.addIntegerOption((opt) =>
         opt
@@ -203,20 +208,33 @@ export default class TriviaCommandBuilder {
     int: CommandInteraction,
     additionalOptions?: Partial<TriviaGameOptions>
   ) {
-    const maximumPlayerCount = int.options.get("maximum_player_count", false)?.value as number;
-    const maximumPoints = int.options.get("maximum_points", false)?.value as number;
-    const minimumPlayerCount = int.options.get("minimum_player_count", false)?.value as number;
-    const minimumPoints = int.options.get("minimum_points", false)?.value as number;
-    const questionAmount = int.options.get("question_amount", false)?.value as number;
-    const questionDifficulty = int.options.get("question_difficulty", false)?.value as QuestionDifficulty;
-    const questionType = int.options.get("question_type", false)?.value as QuestionType;
+    const maximumPlayerCount = int.options.get("maximum_player_count", false)
+      ?.value as number;
+    const maximumPoints = int.options.get("maximum_points", false)
+      ?.value as number;
+    const minimumPlayerCount = int.options.get("minimum_player_count", false)
+      ?.value as number;
+    const minimumPoints = int.options.get("minimum_points", false)
+      ?.value as number;
+    const questionAmount = int.options.get("question_amount", false)
+      ?.value as number;
+    const questionDifficulty = int.options.get("question_difficulty", false)
+      ?.value as QuestionDifficulty;
+    const questionType = int.options.get("question_type", false)
+      ?.value as QuestionType;
     const queueTime = int.options.get("queue_time", false)?.value as number;
-    const timePerQuestion = int.options.get("time_per_question", false)?.value as number;
-    const triviaCategory = int.options.get("category", false)?.value as CategoryNameResolvable;
-    const timeBetweenRounds = int.options.get("time_between_rounds", false)?.value as number;
-    const pointsPerStreakAmount = int.options.get("points_per_streak", false)?.value as number;
-    const maximumStreakBonus = int.options.get("max_streak_bonus", false)?.value as number;
-    const streakDefinitionLevel = int.options.get("streak_level", false)?.value as number;
+    const timePerQuestion = int.options.get("time_per_question", false)
+      ?.value as number;
+    const triviaCategory = int.options.get("category", false)
+      ?.value as CategoryNameResolvable;
+    const timeBetweenRounds = int.options.get("time_between_rounds", false)
+      ?.value as number;
+    const pointsPerStreakAmount = int.options.get("points_per_streak", false)
+      ?.value as number;
+    const maximumStreakBonus = int.options.get("max_streak_bonus", false)
+      ?.value as number;
+    const streakDefinitionLevel = int.options.get("streak_level", false)
+      ?.value as number;
 
     let options: TriviaGameOptions = {} as TriviaGameOptions;
     options.maximumPlayerCount =
