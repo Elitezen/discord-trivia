@@ -56,7 +56,7 @@ export default class TriviaManager {
       } else if (game.channel === null) {
         const { message, header } = DiscordTriviaError.errors.channelNullish;
         throw new DiscordTriviaError(message, header);
-      } else if ((game.channel.type as unknown as string) != 'GUILD_TEXT') {
+      } else if ((game.channel.type) != ChannelType.GuildText) {
         // game.channel.type (:ChannelType.GuildText) != ChannelType.GuildText always returns true
         const { message, header } = DiscordTriviaError.errors.channelNonText;
         throw new DiscordTriviaError(message, header);
