@@ -8,9 +8,9 @@ Guide: https://dev.to/elitezen/code-fully-fledged-trivia-games-in-discordjs-ge8
 Website: https://elitezen.github.io/discord-trivia-website/
 
 
-## 1.2.3
+## 1.2.3 🐛
 - Fixed issue of GUILD_NON_TEXT in text channels.
-- Addressed issue of games now being able to start with 0 players.
+- Addressed issue of games now being able to start with 0 players
 
 
 ## Installation

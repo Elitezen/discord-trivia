@@ -563,11 +563,6 @@ class TriviaGame extends EventEmitter implements TriviaGame {
 
     collector.on("end", async () => {
       if (this.state == "ended") return;
-      console.log(
-        collector.endReason,
-        this.players.size,
-        this.options.minimumPlayerCount
-      );
       if (this.players.size >= this.options.minimumPlayerCount) {
         await this.initializeGame();
       } else {
