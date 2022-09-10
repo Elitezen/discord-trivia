@@ -1,10 +1,16 @@
-import { ColorResolvable } from "discord.js";
+import { ColorResolvable, GuildMember } from "discord.js";
+import TriviaGame from "../Classes/TriviaGame";
 
-export interface TriviaManagerOptions {
+export interface DecorationOptions {
   embedColor: ColorResolvable;
   embedImage: string;
+  embedThumbnail: string;
 }
 
-export interface TriviaGame {
-  foo: 'bar'
+export interface Player {
+  points: number;
+  hasAnswered: boolean;
+  isCorrect: boolean;
+  game: TriviaGame;
+  member: GuildMember;
 }

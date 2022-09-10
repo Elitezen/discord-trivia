@@ -1,4 +1,4 @@
-import { InteractionType, TextBasedChannel, Guild, CommandInteraction, InteractionReplyOptions, ReplyMessageOptions, Message, GuildMember } from 'discord.js';
+import { InteractionType, TextBasedChannel, Guild, CommandInteraction, InteractionReplyOptions, ReplyMessageOptions, Message, GuildMember, MessageType } from 'discord.js';
 
 import { DiscordComponentResolvable, DiscordComponentResolvableEnum, CommandInteractionReply, MessageReply } from "../Typings/types";
 
@@ -27,7 +27,7 @@ export default class RootComponent {
       throw 'Invalid Root!';
     } 
 
-    this.type = root.type;
+    this.type = root.type === InteractionType.ApplicationCommand ? 2 : 3;
     this.member = root.member as GuildMember;
     this.channel = root.channel;
     this.guild = root.guild;
