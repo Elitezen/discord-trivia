@@ -6,7 +6,6 @@ import {
   InteractionType,
   Message,
   MessagePayload,
-  ReplyMessageOptions,
   TextBasedChannel,
 } from "discord.js";
 

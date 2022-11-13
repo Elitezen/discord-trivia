@@ -39,7 +39,7 @@
   "homepage": "https://github.com/Elitezen/discord-trivia#readme",
   "dependencies": {
     "discord-api-types": "^0.26.1",
-    "discord.js": "^14.1.2",
+    "discord.js": "^14.6.0",
     "open-trivia-db": "^1.0.1"
   },
   "devDependencies": {
