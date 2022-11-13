@@ -7,7 +7,6 @@ import {
   InteractionReplyOptions,
   Message,
   MessageComponentInteraction,
-  TextBasedChannel,
   TextChannel,
 } from "discord.js";
 import {
@@ -38,7 +37,6 @@ import { promisify } from "util";
 import { EventEmitter } from "events";
 import RootComponent from "./RootComponent";
 import prepareCustomQuestions from "../Functions/prepareCustomQuestions";
-import * as x from 'discord-api-types/v9';
 
 const wait = promisify(setTimeout);
 
@@ -175,7 +173,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
     this.questions = [];
     this.hostMember = component.hostMember as GuildMember;
     this.leaderboard = new Collection();
-    this.options = {} as TriviaGameOptions
+    this.options = {} as TriviaGameOptions;
     this.options = options
       ? Object.assign(TriviaGame.defaults, options)
       : TriviaGame.defaults;
@@ -207,6 +205,16 @@ class TriviaGame extends EventEmitter implements TriviaGame {
         difficulty: null as unknown as QuestionDifficulty,
         type: null as unknown as QuestionType,
       }, this.options.questionData)
+
+      this.options.questionData = Object.assign(
+        {
+          category: null as unknown as CategoryName,
+          amount: 10,
+          difficulty: null as unknown as QuestionDifficulty,
+          type: null as unknown as QuestionType,
+        },
+        this.options.questionData
+      );
 
       try {
         this.manager.validator.validateDiscordStructures(this);
@@ -458,12 +466,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
     const data = this.options.questionData;
 
     if (typeof data == "object" && !Array.isArray(data) && data !== null) {
-      const {
-        amount: amount,
-        difficulty: difficulty,
-        type: type,
-        category: category,
-      } = data as QuestionData;
+      const { amount, difficulty, type, category } = data as QuestionData;
 
       this.questions = await getQuestions({
         amount,
@@ -472,7 +475,18 @@ class TriviaGame extends EventEmitter implements TriviaGame {
         category: category!,
       });
 
-      if (data?.customQuestions) this.questions = OpenTDBUtil.shuffleArray([...this.questions, ...prepareCustomQuestions(data.customQuestions)])
+      if (data?.customQuestions) {
+        if (data.amount <= data.customQuestions.length) {
+          this.questions = prepareCustomQuestions(
+            data.customQuestions.slice(0, data.amount)
+          );
+        } else {
+          this.questions = OpenTDBUtil.shuffleArray([
+            ...this.questions,
+            ...prepareCustomQuestions(data.customQuestions),
+          ]);
+        }
+      }
     } else if (Array.isArray(data)) {
       this.questions = prepareCustomQuestions(data);
     } else {
@@ -559,11 +573,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
 
     collector.on("end", async () => {
       if (this.state == "ended") return;
-
-      if (
-        collector.endReason ||
-        this.players.size >= this.options.minimumPlayerCount
-      ) {
+      if (this.players.size >= this.options.minimumPlayerCount) {
         await this.initializeGame();
       } else {
         this.end();

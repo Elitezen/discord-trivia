@@ -9,11 +9,11 @@ import {
   TextBasedChannel,
 } from "discord.js";
 
-import * as x from 'discord-api-types/v9';
+import * as x from "discord-api-types/v9";
 
 interface opt {
   content: string;
-  ephemeral: boolean
+  ephemeral: boolean;
 }
 
 export default class RootComponent {
@@ -37,9 +37,7 @@ export default class RootComponent {
     [InteractionType.MessageComponent]: (options: opt) => {
       return this.entity.reply(options);
     },
-    [InteractionType.ApplicationCommand]: (
-      options: opt
-    ) => {
+    [InteractionType.ApplicationCommand]: (options: opt) => {
       return (this.entity as CommandInteraction).followUp(options);
     },
   };

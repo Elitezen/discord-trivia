@@ -1,6 +1,6 @@
 {
   "name": "discord-trivia",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Easily integrate trivia games into your Discord.JS client with discord-trivia",
   "keywords": [
     "discord",
@@ -45,6 +45,7 @@
   "devDependencies": {
     "@types/node": "^17.0.21",
     "nodemon": "^2.0.15",
+    "prettier": "^2.7.1",
     "typescript": "^4.5.5"
   }
 }

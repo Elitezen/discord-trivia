@@ -15,7 +15,7 @@ export default class EmbedGenerator {
 
   gameQueueStart() {
     return new EmbedBuilder()
-      .setTitle('Disord Trivia')
+      .setTitle("Disord Trivia")
       .setDescription(
         `${this.game.hostMember.displayName} is starting a Trivia Game!`
       )
@@ -119,7 +119,7 @@ export default class EmbedGenerator {
         })
       );
 
-    let description = "";
+    let description = "**Round Over**!\n";
 
     if (this.game.manager.options.showAnswers) {
       description += `Correct Answer:\n**${question.correctAnswer}**\n`;
@@ -163,7 +163,7 @@ export default class EmbedGenerator {
         "https://cdn.discordapp.com/attachments/947636249856999424/947636392673038336/icon.png"
       )
       .setColor(this.theme)
-      .setDescription(podium)
+      .setDescription(podium.length ? podium : null)
       .setFooter({
         text: "Thanks for playing",
       });
@@ -179,12 +179,12 @@ export default class EmbedGenerator {
       .addFields(
         {
           name: "Category",
-          value: question.category || 'Custom',
+          value: question.category || "Custom",
           inline: true,
         },
         {
           name: "Difficulty",
-          value: question.difficulty || 'Custom',
+          value: question.difficulty || "Custom",
           inline: true,
         },
         {
@@ -202,9 +202,7 @@ export default class EmbedGenerator {
         })
         .join("\n");
 
-      embed.addFields([
-        { name: 'Choices', value: choices }
-      ]);
+      embed.addFields([{ name: "Choices", value: choices }]);
     }
 
     return embed;
