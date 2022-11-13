@@ -6,7 +6,6 @@ import {
   InteractionType,
   Message,
   MessagePayload,
-  ReplyMessageOptions,
   TextBasedChannel,
 } from "discord.js";
 
@@ -34,7 +33,7 @@ export default class RootComponent {
 
   // The following error occures without ':any'
   // The inferred type of 'followUp' cannot be named without a reference to 'discord.js/node_modules/discord-api-types/v9'. This is likely not portable. A type annotation is necessary.
-  followUp:any = {
+  followUp: any = {
     [InteractionType.MessageComponent]: (options: opt) => {
       return this.entity.reply(options);
     },

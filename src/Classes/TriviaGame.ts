@@ -1,5 +1,6 @@
 import {
   Collection,
+  ComponentType,
   EmbedBuilder,
   Guild,
   GuildMember,
@@ -178,7 +179,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
     this.options = options
       ? Object.assign(TriviaGame.defaults, options)
       : TriviaGame.defaults;
-    this.state = "pending";
+    this.state = TriviaGameState.Pending;
     this.embeds = new EmbedGenerator(this);
     this.messages = new Collection();
 
@@ -199,7 +200,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
   start(): Promise<void> {
     return new Promise(async (resolve, reject) => {
       if (this.state == "ended") return;
-      
+
       this.options.questionData = Object.assign({
         category: null as unknown as CategoryName,
         amount: 10,
@@ -218,12 +219,12 @@ class TriviaGame extends EventEmitter implements TriviaGame {
           ephemeral: true,
         });
 
-        this.state = "queue";
+        this.state = TriviaGameState.Queue;
         setImmediate(() => {
           this.emit("queue");
         });
       } catch (err) {
-        this.state = "ended";
+        this.state = TriviaGameState.Ended;
         this.emit("ended");
         this.component.followUp[this.component.type]({
           content: (err as DiscordTriviaError).message,
@@ -260,7 +261,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
    */
   end() {
     this.manager.games.delete(this.channel.id);
-    this.state = "ended";
+    this.state = TriviaGameState.Ended;
     setImmediate(() => {
       this.emit("ended", this.data());
     });
@@ -355,6 +356,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
 
       const collector = this.channel.createMessageComponentCollector({
         time: this.options.timePerQuestion,
+        componentType: ComponentType.Button
       });
 
       const emissionTime = performance.now();
@@ -395,7 +397,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
               Math.max(
                 (player.correctAnswerStreak -
                   (this.options.streakDefinitionLevel - 1)) *
-                  this.options.pointsPerStreakAmount,
+                this.options.pointsPerStreakAmount,
                 0
               ),
               this.options.maximumStreakBonus
@@ -503,6 +505,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
 
     const collector = this.channel.createMessageComponentCollector({
       time: this.options.queueTime,
+      componentType: ComponentType.Button
     });
 
     collector.on("collect", async (int) => {
