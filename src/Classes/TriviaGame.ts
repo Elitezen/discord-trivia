@@ -1,44 +1,687 @@
-import { Collection, GuildMember, Snowflake } from "discord.js";
-import { Player } from "../Typings/interfaces";
+import {
+  Collection,
+  Guild,
+  GuildMember,
+  Snowflake,
+  TextBasedChannel,
+  Message,
+  ComponentType,
+  ButtonInteraction,
+  CacheType,
+  InteractionCollector,
+  ButtonStyle,
+  ColorResolvable,
+} from "discord.js";
+import {
+  DecorationOptions,
+  GameData,
+  GameOptions,
+  GameQuestion,
+} from "../Typings/interfaces";
 import TriviaPlayer from "./TriviaPlayer";
 import RootComponent from "./RootComponent";
 import TriviaManager from "./TriviaManager";
+import EmbedGenerator from "./EmbedGenerator";
+import EventEmitter = require("events");
+import { promisify } from "util";
+import { GameEvents, GameStates } from "../Typings/enums";
+import { CustomQuestion, Leaderboard } from "../Typings/types";
+import { GameQuestionOptions } from "../Typings/interfaces";
+import {
+  Category,
+  CategoryNameType,
+  getQuestions,
+  Question,
+  QuestionTypes,
+  Util,
+} from "open-trivia-db";
+import {
+  buttonRowChoicesBoolean,
+  buttonRowChoicesMultiple,
+  buttonRowQueue,
+} from "../Components/messageButtonRows";
 
-export default class TriviaGame {
+const sleep = promisify(setTimeout);
+
+declare interface TriviaGame {
+  on(event: GameEvents.Pending | "pending", listener: () => void): this;
+  on(event: GameEvents.Queue | "queue", listener: () => void): this;
+  on(event: GameEvents.End | "end", listener: (data: GameData) => void): this;
+}
+
+/**
+ * Represents a trivia game.
+ * @extends {EventEmitter}
+ * @implements {TriviaGame}
+ */
+class TriviaGame extends EventEmitter implements TriviaGame {
+  /**
+   * The embed generator for this game
+   * @type {EmbedGenerator}
+   * @readonly
+   */
+  public readonly embeds: EmbedGenerator;
+
+  /**
+   * The host of this trivia game.
+   * @type {GuildMember}
+   * @readonly
+   */
   public readonly host: GuildMember;
+
+  /**
+   * The manager this game belongs to.
+   * @type {TriviaManager}
+   * @readonly
+   */
   public readonly manager: TriviaManager;
-  public readonly players: Collection<Snowflake, Player>;
-  protected playerFilter = {
-    callback: (member:GuildMember) => true,
-    text: 'You do not meet the criteria to join this game'
+
+  /**
+   * The players of this game.
+   * @type {Collection<Snowflake, TriviaPlayer>}
+   * @readonly
+   */
+  public readonly players: Collection<Snowflake, TriviaPlayer>;
+
+  /**
+   * The guild of this trivia game.
+   * @type {Guild}
+   * @readonly
+   */
+  public readonly guild: Guild;
+
+  /**
+   * The channel of this trivia game.
+   * @type {TextBasedChannel}
+   * @readonly
+   */
+  public readonly channel: TextBasedChannel;
+
+  /**
+   * The component of this trivia game.
+   * @type {RootComponent}
+   * @readonly
+   */
+  public readonly component: RootComponent;
+
+  /**
+   * The queue message of this trivia game.
+   * @type {Message | null}
+   */
+  public queueMessage: Message | null = null;
+
+  /**
+   * All the messages this game has created.
+   * @type {Collection<Snowflake, () => Promise<Message<boolean>>>}
+   */
+  public messages: Collection<Snowflake, () => Promise<Message<boolean>>>;
+
+  /**
+   * The state of this trivia game.
+   * @type {GameStates}
+   */
+  public state: GameStates;
+
+  /**
+   * The questions this trivia game will use.
+   * @type {GameQuestion[]}
+   */
+  public questions: GameQuestion[] = [];
+
+  /**
+   * Represents this trivia game's leaderboard.
+   * @type {Leaderboard}
+   */
+  public leaderboard: Leaderboard = new Collection();
+
+  /**
+   * The default game options for trivia games.
+   * @type {GameOptions}
+   * @static
+   */
+  public static gameOptionDefaults: GameOptions = {
+    queueTime: 10_000,
+    minPlayerCount: 2,
+    minPoints: 1,
+    maxPlayerCount: 50,
+    maxPoints: 100,
+    timeBetweenRounds: 7_000,
+    timePerQuestion: 10_000,
+    streakDefinitionLevel: 3,
+    pointsPerSteakAmount: 10,
+    maximumStreakBonus: 30,
+    showAnswers: true,
   };
 
-  constructor(root:RootComponent, manager:TriviaManager) {
+  /**
+   * The default game options for questions in this trivia games.
+   * @type {GameQuestionOptions}
+   * @static
+   */
+  public static gameQuestionOptionDefaults: GameQuestionOptions = {
+    amount: 10,
+    customQuestions: null,
+  };
+
+  /**
+   * This game's set game options.
+   * @type {GameOptions}
+   */
+  public gameOptions: GameOptions = TriviaGame.gameOptionDefaults;
+
+  /**
+   * This game's set question options.
+   * @type {GameQuestionOptions}
+   */
+  public gameQuestionOptions: GameQuestionOptions =
+    TriviaGame.gameQuestionOptionDefaults;
+
+  /**
+   * Handles adding new members to the game.
+   *
+   */
+  protected playerFilter = {
+    /**
+     * Runs a function with a provided member. This function must return true to allow the member into the game.
+     * @param member
+     * @returns {boolean}
+     */
+    callback: (member: GuildMember): boolean => true,
+
+    /**
+     * The text to reply with if a member was rejected from the callback function.
+     * @type {string}
+     */
+    rejectionText: "You do not meet the criteria to join this game",
+  };
+
+  /**
+   * The decoration options for this game.
+   * @type {DecorationOptions}
+   */
+  public decoration: DecorationOptions;
+
+  constructor(root: RootComponent, manager: TriviaManager) {
+    super();
+
+    this.embeds = new EmbedGenerator(this);
     this.host = root.member;
     this.manager = manager;
+    this.decoration = manager.decoration;
     this.players = new Collection();
+    this.guild = root.guild;
+    this.channel = root.channel;
+    this.component = root;
+    this.state = GameStates.Pending;
+    this.messages = new Collection();
 
-    this.addPlayer(root.member);
+    this.setState(GameStates.Pending);
+    this.emit("pending");
+    return this;
   }
 
-  protected addPlayer(member:GuildMember, component?: RootComponent) {
-    if (!this.playerFilter.callback(member)) {
-      return component?.reply[component.type]({
-        content: this.playerFilter.text,
-        ephemeral: true
-      })
-    }
+  /**
+   * Returns the current data of this game.
+   * @param {boolean} endedNow Whether this game has finalized.
+   * @returns {GameData}
+   */
+  public data(endedNow: boolean): GameData {
+    const category =
+      typeof this.gameQuestionOptions.category !== "undefined"
+        ? isNaN(+this.gameQuestionOptions.category)
+          ? this.gameQuestionOptions.category
+          : Category.nameById(+this.gameQuestionOptions.category)
+        : null;
 
-    this.players.set(member.id, new TriviaPlayer(this, member));
+    return {
+      questions: this.questions,
+      category:
+        category !== null && isNaN(+category)
+          ? Category.idByName(category as unknown as CategoryNameType)
+          : category,
+      difficulty: this.gameQuestionOptions.difficulty || null,
+      amount: this.gameQuestionOptions.amount,
+      timeEnd: endedNow ? Date.now() : null,
+      players: this.leaderboard,
+    };
   }
 
-  public allowMember(options:{
-    filter: (member:GuildMember) => boolean;
-    text?: string;
-  }) {
-    this.playerFilter.callback = options.filter;
-    if (typeof options.text === 'string') this.playerFilter.text = options.text;
+  /**
+   * Sets this game's game options.
+   * @param {Partial<GameOptions>} options
+   * @returns {this}
+   */
+  public setGameOptions(options: Partial<GameOptions>): this {
+    this.gameOptions = Object.assign(TriviaGame.gameOptionDefaults, options);
+    return this;
+  }
+
+  /**
+   * Sets this game's question options.
+   * @param {GameQuestionOption} options
+   * @returns {this}
+   */
+  public setQuestionOptions(options: GameQuestionOptions): this {
+    if (options.category)
+      options.category = isNaN(+options.category)
+        ? Category.idByName(options.category as unknown as CategoryNameType)!
+        : options.category;
+    this.gameQuestionOptions = Object.assign(
+      TriviaGame.gameQuestionOptionDefaults,
+      options
+    );
+    return this;
+  }
+
+  /**
+   * Sets the state of this game.
+   * @param {GameStates} state
+   */
+  protected setState(state: GameStates) {
+    this.state = state;
+  }
+
+  /**
+   * Sets the member filter data for this game.
+   * @returns {this}
+   */
+  public setMemberFilter(options: {
+    callback: (member: GuildMember) => boolean;
+    rejectionText?: string;
+  }): this {
+    this.playerFilter.callback = options.callback;
+    if (typeof options.rejectionText === "string")
+      this.playerFilter.rejectionText = options.rejectionText;
 
     return this;
   }
+
+  /**
+   * Sets the embed colors for this game's generated embeds.
+   * @param {ColorResolvable} color
+   * @returns {this}
+   */
+  public setEmbedColor(color: ColorResolvable): this {
+    this.decoration.embedColor = color;
+    return this;
+  }
+
+  /**
+   * Sets the button style for this game's buttons.
+   * @param {ButtonStyle} style
+   * @returns {this}
+   */
+  public setButtonStyle(style: ButtonStyle): this {
+    this.decoration.buttonStyle = style;
+    return this;
+  }
+
+  /**
+   * Sets the embed thumbnails for this game's generated embeds.
+   * @param {string} url
+   * @returns {this}
+   */
+  public setThumbnail(url: string): this {
+    this.decoration.embedThumbnail = url;
+    return this;
+  }
+
+  /**
+   * Sets the embed image for this game's generated embeds.
+   * @param {string} url
+   * @returns {this}
+   */
+  public setImage(url: string): this {
+    this.decoration.embedImage = url;
+    return this;
+  }
+
+  /**
+   * Applies decoration options for this game.
+   * @param {Partial<DecorationOptions>} options
+   * @returns {this}
+   */
+  public decorate(options: Partial<DecorationOptions>): this {
+    this.decoration = Object.assign(this.decoration, options);
+    return this;
+  }
+
+  /**
+   * Ends this trivia game.
+   */
+  public end(): void {
+    this.setState(GameStates.Ended);
+    this.emit(GameEvents.End, this.data(true));
+    this.channel.send({
+      embeds: [this.embeds.finalLeaderboard().toJSON()],
+    });
+  }
+
+  /**
+   * sets up game's creation.
+   */
+  public async setup(): Promise<void> {
+    this.setState(GameStates.Queue);
+    this.emit(GameEvents.Queue);
+
+    this.manager.games.set(this.channel.id, this);
+
+    let msg = await this.component.reply({
+      embeds: [this.embeds.gameQueue()],
+      components: [buttonRowQueue(this.decoration.buttonStyle)],
+      fetchReply: true,
+    });
+
+    if (msg.deletable) this.messages.set(msg.id, msg.delete);
+    this.queueMessage = msg;
+
+    await this.listenForNewPlayers();
+  }
+
+  /**
+   * Creates a listener for new members.
+   * @private
+   */
+  private async listenForNewPlayers(): Promise<void> {
+    const collector = this.queueMessage!.createMessageComponentCollector({
+      time: this.gameOptions.queueTime,
+      componentType: ComponentType.Button,
+      max: this.gameOptions.maxPlayerCount,
+    });
+
+    collector.on("collect", this.handleMemberJoin);
+    collector.on("end", async (_) => {
+      if (collector.endReason !== "limit") return this.handleQueueTimeout();
+
+      try {
+        await this.initializeGame();
+      } catch (err) {
+        throw err;
+      }
+    });
+  }
+
+  /**
+   * Handles a new member.
+   * @param {ButtonInteraction<CacheType>} interaction
+   * @private
+   */
+  private async handleMemberJoin(
+    interaction: ButtonInteraction<CacheType>
+  ): Promise<void> {
+    const userId = interaction.user.id;
+    if (this.players.has(userId)) {
+      return void interaction.reply({
+        content: "❗ **You are already in the queue**",
+        ephemeral: true,
+      });
+    }
+
+    const member = await this.guild.members.fetch(userId);
+    if (!this.playerFilter.callback(member)) {
+      return void interaction.reply({
+        content: this.playerFilter.rejectionText,
+        ephemeral: true,
+      });
+    }
+
+    const player = new TriviaPlayer(this, member);
+
+    this.players.set(member.id, player);
+    this.emit(GameEvents.PlayerJoin, player);
+    await interaction.reply({
+      content: `🙌   **${member.displayName}** has joined in!`,
+    });
+  }
+
+  /**
+   * Starts the game.
+   * @private
+   */
+  private async initializeGame(): Promise<void> {
+    this.leaderboard = this.players;
+    const apiQuestions = await getQuestions(this.gameQuestionOptions);
+    if (this.gameQuestionOptions.customQuestions) {
+      if (
+        this.gameQuestionOptions.amount <=
+        this.gameQuestionOptions.customQuestions.length
+      ) {
+        this.gameQuestionOptions.customQuestions =
+          this.gameQuestionOptions.customQuestions.slice(
+            0,
+            this.gameQuestionOptions.amount
+          );
+      } else {
+        this.questions = parseQuestions([
+          ...apiQuestions,
+          ...this.gameQuestionOptions.customQuestions,
+        ]);
+      }
+    } else {
+      this.questions = parseQuestions(apiQuestions);
+    }
+
+    function parseQuestions(qs: (Question | CustomQuestion)[]): GameQuestion[] {
+      return qs.map((q) => {
+        return {
+          value: q.value,
+          category:
+            typeof q.category === "string" ? q.category : q.category.name,
+          difficulty: q.difficulty,
+          correctAnswer: q.correctAnswer,
+          incorrectAnswers: q.incorrectAnswers,
+          allAnswers: Util.shuffleArray([
+            q.correctAnswer,
+            ...q.incorrectAnswers,
+          ]),
+          type: q.type,
+          checkAnswer: (str) => str === q.correctAnswer,
+        };
+      });
+    }
+
+    let msg = await this.channel.send({
+      embeds: [this.embeds.gameStart()],
+    });
+
+    if (msg.deletable) this.messages.set(msg.id, msg.delete);
+
+    await sleep(TriviaGame.gameOptionDefaults.timeBetweenRounds);
+    await this.beginGameLoop();
+  }
+
+  /**
+   * Begins iterating through question and answer handling.
+   * @private
+   */
+  private async beginGameLoop(): Promise<void> {
+    let msg: Message;
+    for await (const question of this.questions) {
+      if (this.state === GameStates.Ended) break;
+      msg = await this.channel.send({
+        content: "🕥 **Preparing the next question...**",
+      });
+
+      this.messages.set(msg.id, msg.delete);
+      await sleep(this.gameOptions.timeBetweenRounds);
+      await this.emitQuestion(question);
+    }
+
+    this.end();
+  }
+
+  /**
+   * Shows a question and collects answers.
+   * @param {GameQuestion} question
+   * @private
+   */
+  private async emitQuestion(question: GameQuestion): Promise<void> {
+    return new Promise(async (resolve) => {
+      let msg = await this.channel.send({
+        embeds: [this.embeds.question(question)],
+        components: [
+          question.type === QuestionTypes.Multiple
+            ? buttonRowChoicesMultiple(this.decoration.buttonStyle)
+            : buttonRowChoicesBoolean(this.decoration.buttonStyle),
+        ],
+      });
+
+      this.messages.set(msg.id, msg.delete);
+
+      const collector = this.channel.createMessageComponentCollector({
+        time: this.gameOptions.timePerQuestion,
+        componentType: ComponentType.Button,
+      });
+
+      const emissionTime = Date.now();
+      collector.on("collect", async (i) => {
+        let timeElapsed = Date.now() - emissionTime;
+        if (timeElapsed > this.gameOptions.timePerQuestion) return;
+
+        await this.handleAnswer(i, question, timeElapsed);
+      });
+
+      collector.on("end", async () => {
+        await this.handleRoundEnd(question);
+        resolve();
+      });
+    });
+  }
+
+  /**
+   * Handles a new answer
+   * @param {ButtonInteraction<CacheType>} interaction
+   * @param {GameQuestion} question
+   * @param {number} timeElapsed
+   * @private
+   */
+  private async handleAnswer(
+    interaction: ButtonInteraction<CacheType>,
+    question: GameQuestion,
+    timeElapsed: number
+  ): Promise<void> {
+    const player = this.players.get(interaction.user.id);
+    if (!player) {
+      return void interaction.reply({
+        content: "❌ You are not apart of this match",
+        ephemeral: true,
+      });
+    } else if (player.hasAnswered) {
+      return void interaction.reply({
+        content: "❗ **You have already chosen an answer**",
+        ephemeral: true,
+      });
+    }
+
+    await interaction.reply({
+      content: `🔹 Your answer has been locked in!\n\n⚡ **Speed: ${+(
+        timeElapsed / 1000
+      ).toFixed(2)} seconds**`,
+      ephemeral: true,
+    });
+
+    let msg = await this.channel.send({
+      content: `**${player.member.displayName}** has locked in!`,
+    });
+
+    this.messages.set(msg.id, msg.delete);
+
+    player.hasAnswered = true;
+    const answer = (
+      question.type == QuestionTypes.Multiple
+        ? question.allAnswers
+        : ["False", "True"]
+    )[Number(interaction.customId)];
+
+    player.setIsCorrect(question.correctAnswer === answer);
+
+    if (player.isCorrect) {
+      player.addPoints(this.calculatePoints(timeElapsed));
+      player.correctAnswerStreak++;
+
+      if (
+        player.correctAnswerStreak >= this.gameOptions.streakDefinitionLevel
+      ) {
+        const streakBonus = Math.min(
+          Math.max(
+            (player.correctAnswerStreak -
+              (this.gameOptions.streakDefinitionLevel - 1)) *
+              this.gameOptions.pointsPerSteakAmount,
+            0
+          ),
+          this.gameOptions.maximumStreakBonus
+        );
+
+        player.addPoints(streakBonus);
+      }
+    } else {
+      player.isCorrect = false;
+      player.correctAnswerStreak = 0;
+    }
+  }
+
+  /**
+   * Handles the end of the round.
+   * @param {GameQuestion} question
+   * @private
+   */
+  private async handleRoundEnd(question: GameQuestion): Promise<void> {
+    this.leaderboard = this.leaderboard.sort((a, b) => b.points - a.points);
+
+    const msg = await this.channel.send({
+      embeds: [this.embeds.leaderboardUpdate(question)],
+    });
+
+    if (msg.deletable) {
+      setTimeout(() => {
+        msg.delete().catch(() => null);
+      }, 10_000);
+    }
+
+    await this.prepareNextRound();
+    await sleep(this.gameOptions.timeBetweenRounds);
+  }
+
+  /**
+   * Calculates the amount of points to award the player.
+   * @param {number} timePassed - The amount of time elapsed since the question's emission in ms.
+   * @private
+   */
+  private calculatePoints(timePassed: number) {
+    const { timePerQuestion, maxPoints, minPoints } = this.gameOptions;
+    const timeProportion = Number(
+      (timePassed / timePerQuestion).toPrecision(2)
+    );
+    const points =
+      maxPoints - Math.ceil((maxPoints - minPoints) * timeProportion);
+
+    return points;
+  }
+
+  /**
+   * Prepares this game's data for
+   * @private
+   */
+  private async prepareNextRound(): Promise<void> {
+    return new Promise((resolve) => {
+      this.messages.forEach((deleter) => deleter().catch(() => null));
+      this.players.forEach((p) => p.prepareForRound());
+
+      resolve();
+    });
+  }
+
+  /**
+   * Handle's the game if queue times out
+   * @private
+   */
+  private async handleQueueTimeout(): Promise<void> {
+    this.end();
+
+    await this.channel.send({
+      content: "Game failed to meet minimum player requirements",
+    });
+  }
 }
+
+export default TriviaGame;

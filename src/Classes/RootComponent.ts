@@ -1,36 +1,108 @@
-import { InteractionType, TextBasedChannel, Guild, CommandInteraction, InteractionReplyOptions, ReplyMessageOptions, Message, GuildMember, MessageType } from 'discord.js';
+import {
+  InteractionType,
+  TextBasedChannel,
+  Guild,
+  CommandInteraction,
+  InteractionReplyOptions,
+  BaseMessageOptions,
+  Message,
+  GuildMember,
+} from "discord.js";
+import {
+  DiscordComponentResolvable,
+  DiscordComponentResolvableEnum,
+} from "../Typings/types";
 
-import { DiscordComponentResolvable, DiscordComponentResolvableEnum, CommandInteractionReply, MessageReply } from "../Typings/types";
-
-
+/**
+ * Represents a Discord component that can be used to instantiate a trivia game.
+ */
 export default class RootComponent {
+  /**
+   * The type of data this component is.
+   * @type {DiscordComponentResolvableEnum}
+   * @readonly
+   */
   public readonly type: DiscordComponentResolvableEnum;
-  public readonly channel: TextBasedChannel | null;
-  public readonly guild: Guild | null;
+
+  /**
+   * The channel used for the trivia game.
+   * @type {TextBasedChannel}
+   * @readonly
+   */
+  public readonly channel: TextBasedChannel;
+
+  /** The guild used for the trivia game.
+   * @type {Guild}
+   * @readonly
+   */
+  public readonly guild: Guild;
+
+  /**
+   * The raw component this component uses.
+   * @type {DiscordComponentResolvable}
+   * @readonly
+   */
   public readonly component: DiscordComponentResolvable;
+
+  /**
+   * The member who instantiated the root component.
+   * @type {GuildMember}
+   * @readonly
+   */
   public readonly member: GuildMember;
 
-  reply = {
-    [InteractionType.ApplicationCommand]: (args:InteractionReplyOptions)
-    :ReturnType<CommandInteractionReply> => {
-      return (this.component as CommandInteraction).reply(args);
-    },
+  /**
+   * Used to reply to an interaction or message.
+   * @param {InteractionReplyOptions | BaseMessageOptions} args
+   */
+  public reply: (
+    args: InteractionReplyOptions | BaseMessageOptions
+  ) => Promise<Message<boolean>>;
 
-    [InteractionType.MessageComponent]: (args: ReplyMessageOptions)
-    :ReturnType<MessageReply> => {
-      return (this.component as Message).reply(args);
-    }
+  /**
+   * Used to reply to an interaction.
+   * @param {InteractionReplyOptions} args
+   * @returns {Promise<Message<boolean>>}
+   * @private
+   */
+  #applicationCommandReply(
+    args: InteractionReplyOptions
+  ): Promise<Message<boolean>> {
+    return (this.component as CommandInteraction).reply({
+      ...args,
+      fetchReply: true,
+    });
   }
 
-  constructor(root:DiscordComponentResolvable) {
+  /**
+   * Used to reply to a message.
+   * @param {BaseMessageOptions} args
+   * @returns {Promise<Message<boolean>>}
+   * @private
+   */
+  #messageReply(args: BaseMessageOptions): Promise<Message<boolean>> {
+    return (this.component as Message).reply(args);
+  }
+
+  /**
+   * @param {DiscordComponentResolvable} root The root component data.
+   */
+  constructor(root: DiscordComponentResolvable) {
     if (![2, 3].includes(root.type)) {
-      throw 'Invalid Root!';
-    } 
+      throw "Invalid Root!";
+    }
+
+    if (root.channel === null) throw TypeError("The provided channel is null");
+    if (root.guild === null) throw TypeError("The provided guild is null");
 
     this.type = root.type === InteractionType.ApplicationCommand ? 2 : 3;
     this.member = root.member as GuildMember;
     this.channel = root.channel;
     this.guild = root.guild;
     this.component = root;
+    this.reply =
+      root.type === InteractionType.ApplicationCommand
+        ? this.#applicationCommandReply
+        : this.#messageReply;
   }
 }
