@@ -3,7 +3,6 @@ import {
   CategoryNameType,
   QuestionDifficulties,
   QuestionDifficultyType,
-  QuestionEncodings,
   QuestionTypes,
   QuestionTypeType,
 } from "open-trivia-db";
@@ -57,7 +56,6 @@ export interface GameQuestionOptions extends Record<string, any> {
   category?: CategoryNameType | number;
   difficulty?: QuestionDifficultyType | QuestionDifficulties;
   type?: QuestionTypeType;
-  encode?: QuestionEncodings;
   customQuestions?: CustomQuestion[] | null;
 }
 

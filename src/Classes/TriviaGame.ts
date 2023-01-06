@@ -40,12 +40,14 @@ import {
   buttonRowChoicesMultiple,
   buttonRowQueue,
 } from "../Components/messageButtonRows";
+import DiscordTriviaError from "./DiscordTriviaError";
 
 const sleep = promisify(setTimeout);
 
 declare interface TriviaGame {
   on(event: GameEvents.Pending | "pending", listener: () => void): this;
   on(event: GameEvents.Queue | "queue", listener: () => void): this;
+  on(event: GameEvents.MemberJoin | "memberJoin", listener: (member:GuildMember) => void): this;
   on(event: GameEvents.End | "end", listener: (data: GameData) => void): this;
 }
 
@@ -358,7 +360,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
   }
 
   /**
-   * sets up game's creation.
+   * Sets up game's creation.
    */
   public async setup(): Promise<void> {
     this.setState(GameStates.Queue);
@@ -428,7 +430,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
     const player = new TriviaPlayer(this, member);
 
     this.players.set(member.id, player);
-    this.emit(GameEvents.PlayerJoin, player);
+    this.emit(GameEvents.MemberJoin, player);
     await interaction.reply({
       content: `🙌   **${member.displayName}** has joined in!`,
     });
@@ -680,6 +682,31 @@ class TriviaGame extends EventEmitter implements TriviaGame {
 
     await this.channel.send({
       content: "Game failed to meet minimum player requirements",
+    });
+  }
+
+  public static validateCustomQuestions(arr:Partial<CustomQuestion>[]):CustomQuestion[] {
+    return arr.map(q => {
+      if (!q.value) {
+        throw new DiscordTriviaError('All custom questions must have a value property');
+      } else if (q.correctAnswer === undefined) {
+        throw new DiscordTriviaError(`All custom questions must have a correctAnswer property`);
+      } else if (!q.incorrectAnswers || !Array.isArray(q.incorrectAnswers) || q.incorrectAnswers.length < 1) {
+        throw new DiscordTriviaError(`All custom questions must have an incorrectAnswers property as a string array with atleast 1 element. Received ${JSON.stringify(q.incorrectAnswers)}`);
+      }
+
+      if (!q?.type) {
+        if (q.incorrectAnswers.length === 1) {
+          q.type === 'boolean';
+        } else if (q.incorrectAnswers.length === 2) {
+          q.incorrectAnswers = [...q.incorrectAnswers]
+        } else {
+          q.incorrectAnswers = q.incorrectAnswers.slice(0, 2);
+        }
+      }
+
+
+      return q as CustomQuestion;
     });
   }
 }

@@ -13,7 +13,6 @@ export enum GameStates {
 export enum GameEvents {
   Pending = "pending",
   Queue = "queue",
+  MemberJoin = "memberJoin",
   End = "end",
-
-  PlayerJoin = "playerJoin",
 }
