@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from "@discordjs/builders";
+import { SlashCommandBuilder, SlashCommandSubcommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
 import {
   CategoryNameResolvable,
@@ -14,12 +14,12 @@ import {
 import TriviaGame from "./TriviaGame";
 
 export default class TriviaCommandBuilder {
-  private build: SlashCommandBuilder;
+  private build: SlashCommandBuilder | SlashCommandSubcommandBuilder;
   public gameOptions: TriviaGameOptions = TriviaGame.defaults;
   private isApplied: Boolean = false;
 
   constructor(options?: TriviaCommandBuilderOptions) {
-    this.build = new SlashCommandBuilder()
+    this.build = new (options?.asSubcommand ? SlashCommandSubcommandBuilder : SlashCommandBuilder)()
       .setName(options?.name ?? "trivia")
       .setDescription(options?.description ?? "Create a trivia game.");
   }
