@@ -17,6 +17,7 @@ import {
   GameData,
   GameOptions,
   GameQuestion,
+  TextOutputs,
 } from "../Typings/interfaces";
 import TriviaPlayer from "./TriviaPlayer";
 import RootComponent from "./RootComponent";
@@ -177,6 +178,24 @@ class TriviaGame extends EventEmitter implements TriviaGame {
    */
   public gameQuestionOptions: GameQuestionOptions =
     TriviaGame.gameQuestionOptionDefaults;
+
+  public textOutputs: TextOutputs = TriviaGame.textOutputDefaults;
+
+  /**
+   * A record of a game's text outputting.
+   * @type {TextOutputs}
+   */
+  public static textOutputDefaults: TextOutputs = {
+    alreadyQueued: (user) => "❗ **You are already in the queue**",
+    preparingQuestion: () => "🕥 **Preparing the next question...**",
+    notInMatch: () => "❌ You are not apart of this match",
+    alreadyChoseAnswer: (user) => "❗ **You have already chosen an answer**",
+    gameFailedRequirements: () => "Game failed to meet minimum player requirements",
+    answerLockedIn: (user, timeElapsed) => `🔹 Your answer has been locked in!\n\n⚡ **timeElapsed: ${+(
+      timeElapsed / 1000
+    ).toFixed(2)} seconds**`,
+    memberJoinedGame: (member:GuildMember) => `🙌   **${member.displayName}** has joined in!`
+  };
 
   /**
    * Handles adding new members to the game.

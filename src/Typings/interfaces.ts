@@ -1,4 +1,4 @@
-import { ButtonStyle, GuildMember, ColorResolvable } from "discord.js";
+import { ButtonStyle, GuildMember, ColorResolvable, User } from "discord.js";
 import {
   CategoryNameType,
   QuestionDifficulties,
@@ -83,4 +83,17 @@ export interface Player {
   correctAnswerStreak: number;
   game: TriviaGame;
   member: GuildMember;
+}
+
+/**
+ * A record of a game's text outputting.
+ */
+export interface TextOutputs {
+  alreadyQueued: (user:User) => string | string;
+  preparingQuestion: () => string | string;
+  notInMatch: () => string | string;
+  alreadyChoseAnswer: (user:User) => string | string;
+  answerLockedIn: (user:User, timeElapsed:number) => string | string;
+  gameFailedRequirements: () => string | string
+  memberJoinedGame: (member:GuildMember) => string | string;
 }
