@@ -1,95 +1,86 @@
+import { ButtonStyle, GuildMember, ColorResolvable } from "discord.js";
 import {
-  Collection,
-  ColorResolvable,
-  GuildMember,
-  Snowflake,
-} from "discord.js";
-import {
-  CategoryName,
-  CategoryResolvable,
-  Question,
-  QuestionDifficulty,
-  QuestionType,
+  CategoryNameType,
+  QuestionDifficulties,
+  QuestionDifficultyType,
+  QuestionTypes,
+  QuestionTypeType,
 } from "open-trivia-db";
-import { TriviaGameOptionKeys } from "./types";
+import TriviaGame from "../Classes/TriviaGame";
+import { CustomQuestion, Leaderboard } from "./types";
 
-export interface CanvasGeneratorOptions {
-  font: string;
+/**
+ * Decoration options for embeds and buttons.
+ */
+export interface DecorationOptions {
+  buttonStyle: ButtonStyle;
+  embedColor: ColorResolvable;
+  embedImage: string;
+  embedThumbnail: string;
 }
 
-export interface CustomQuestion {
-  value: string;
-  category?: CategoryName<"Pretty">;
-  difficulty?: QuestionDifficulty;
-  correctAnswer: string;
-  incorrectAnswers: [string, string, string] | [`${boolean}`];
-}
-
-export interface DiscordTriviaErrorMessages {
-  [key: string]: {
-    message: string;
-    header: string;
-  };
-}
-
-export interface LockedGameOptionsEntry {
-  optionName: TriviaGameOptionKeys;
-  value: string | number | null;
-}
-
-export interface TriviaCommandBuilderOptions {
-  name: string;
-  description: string;
-  asSubcommand?: boolean;
-}
-
-export interface TriviaGameData {
-  hostMember: GuildMember;
-  players: Collection<Snowflake, TriviaPlayer>;
-}
-
-export interface ResultPlayerData {
-  id: Snowflake;
-  points: number;
-}
-
-export interface TriviaGameResultData {
-  gameConfiguration: TriviaGameOptions;
-  hostMemberId: Snowflake;
-  players: ResultPlayerData[];
-}
-
-export interface TriviaGameOptions {
-  questionData: QuestionData | CustomQuestion[];
-  minimumPlayerCount: number;
-  maximumPlayerCount: number;
-  timePerQuestion: number;
+/**
+ * The options for a game's configuration.
+ */
+export interface GameOptions {
   queueTime: number;
-  minimumPoints: number;
-  maximumPoints: number;
-  pointsPerStreakAmount: number;
-  maximumStreakBonus: number;
-  streakDefinitionLevel: number;
+  maxPlayerCount: number;
+  maxPoints: number;
+  minPlayerCount: number;
+  minPoints: number;
   timeBetweenRounds: number;
+  timePerQuestion: number;
+  streakDefinitionLevel: number;
+  pointsPerSteakAmount: number;
+  maximumStreakBonus: number;
+  showAnswers: boolean;
 }
 
-export interface TriviaManagerOptions {
-  theme?: ColorResolvable;
-  showAnswers?: boolean;
-  image?: string;
+/**
+ * Represents a game's data.
+ */
+export interface GameData {
+  questions: GameQuestion[];
+  category: CategoryNameType | number | null;
+  difficulty: QuestionDifficultyType | null;
+  amount: number;
+  timeEnd: number | null;
+  players: Leaderboard;
 }
 
-export interface TriviaPlayer extends GuildMember {
+/**
+ * The options for a game's question configuration.
+ */
+export interface GameQuestionOptions extends Record<string, any> {
+  amount: number;
+  category?: CategoryNameType | number;
+  difficulty?: QuestionDifficultyType | QuestionDifficulties;
+  type?: QuestionTypeType;
+  customQuestions?: CustomQuestion[] | null;
+}
+
+/**
+ * Represents a trivia question.
+ */
+export interface GameQuestion {
+  value: string;
+  category: string;
+  difficulty: QuestionDifficultyType;
+  type: QuestionTypes | QuestionTypeType;
+  correctAnswer: string;
+  incorrectAnswers: string[];
+  allAnswers: string[];
+  checkAnswer: (str: string) => boolean;
+}
+
+/**
+ * Represents a player's data.
+ */
+export interface Player {
   points: number;
   hasAnswered: boolean;
   isCorrect: boolean;
   correctAnswerStreak: number;
-}
-
-export interface QuestionData {
-  category: CategoryResolvable | null;
-  amount: number;
-  difficulty: QuestionDifficulty | null;
-  type: QuestionType | null;
-  customQuestions?: CustomQuestion[];
+  game: TriviaGame;
+  member: GuildMember;
 }

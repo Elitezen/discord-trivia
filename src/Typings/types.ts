@@ -1,19 +1,50 @@
-import { Collection, Snowflake } from "discord.js";
-import TriviaGame from "../Classes/TriviaGame";
-import { TriviaGameOptions, TriviaPlayer } from "./interfaces";
+import type {
+  CommandInteraction,
+  Message,
+  InteractionType,
+  ChatInputCommandInteraction,
+  CacheType,
+  Collection,
+  Snowflake,
+} from "discord.js";
+import { CategoryNameType, Question, QuestionOptions } from "open-trivia-db";
+import TriviaPlayer from "../Classes/TriviaPlayer";
+const replyCommand: CommandInteraction = null as unknown as CommandInteraction;
+const replyMessage: Message = null as unknown as Message;
+/**
+ * Represents a developer-made question.
+ */
+export type CustomQuestion = Omit<
+  Question,
+  "category" | "allAnswers" | "checkAnswer"
+> & { category: CategoryNameType };
 
-export type TriviaManagerGames = Collection<Snowflake, TriviaGame>;
-export type TriviaPlayers = Collection<Snowflake, TriviaPlayer>;
-export type TriviaGameOptionKeys = keyof TriviaGameOptions;
+/**
+ * A Discord command interaction or message.
+ */
+export type DiscordComponentResolvable =
+  | CommandInteraction
+  | ChatInputCommandInteraction<CacheType>
+  | Message;
 
-export enum TriviaCommandBuilderType {
-    Builder = "BUILDER",
-    JSON = "JSON"
-};
+/**
+ * Enums for `DiscordComponentResolvable`
+ */
+export type DiscordComponentResolvableEnum =
+  | InteractionType.ApplicationCommand
+  | InteractionType.MessageComponent;
 
-export enum TriviaGameState {
-    Pending = "pending",
-    Queue = "queue",
-    InProgress = "inProgress",
-    Ended = "ended"
-}
+/**
+ * The type for the `reply()` function of a `CommandInteraction`,
+ */
+export type CommandInteractionReply = typeof replyCommand.reply;
+
+/**
+ * The type for the `reply()` function of a `Message`.
+ */
+export type MessageReply = typeof replyMessage.reply;
+
+/**
+ * Represents a game's leaderboard.
+ */
+export type Leaderboard = Collection<Snowflake, TriviaPlayer>;
