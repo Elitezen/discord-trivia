@@ -1,61 +1,108 @@
 import {
-  CommandInteraction,
-  Guild,
-  GuildMember,
-  InteractionReplyOptions,
   InteractionType,
-  Message,
-  MessagePayload,
   TextBasedChannel,
+  Guild,
+  CommandInteraction,
+  InteractionReplyOptions,
+  BaseMessageOptions,
+  Message,
+  GuildMember,
 } from "discord.js";
+import {
+  DiscordComponentResolvable,
+  DiscordComponentResolvableEnum,
+} from "../Typings/types";
 
-import * as x from "discord-api-types/v9";
-
-interface opt {
-  content: string;
-  ephemeral: boolean;
-}
-
+/**
+ * Represents a Discord component that can be used to instantiate a trivia game.
+ */
 export default class RootComponent {
-  entity: Message | CommandInteraction;
-  type: InteractionType.MessageComponent | InteractionType.ApplicationCommand;
-  channel: TextBasedChannel;
-  guild: Guild;
-  hostMember: GuildMember;
-  reply = {
-    [InteractionType.MessageComponent]: (options: opt) => {
-      return this.entity.reply(options);
-    },
-    [InteractionType.ApplicationCommand]: (options: opt) => {
-      return this.entity.reply(options);
-    },
-  };
+  /**
+   * The type of data this component is.
+   * @type {DiscordComponentResolvableEnum}
+   * @readonly
+   */
+  public readonly type: DiscordComponentResolvableEnum;
 
-  // The following error occures without ':any'
-  // The inferred type of 'followUp' cannot be named without a reference to 'discord.js/node_modules/discord-api-types/v9'. This is likely not portable. A type annotation is necessary.
-  followUp: any = {
-    [InteractionType.MessageComponent]: (options: opt) => {
-      return this.entity.reply(options);
-    },
-    [InteractionType.ApplicationCommand]: (options: opt) => {
-      return (this.entity as CommandInteraction).followUp(options);
-    },
-  };
+  /**
+   * The channel used for the trivia game.
+   * @type {TextBasedChannel}
+   * @readonly
+   */
+  public readonly channel: TextBasedChannel;
 
-  constructor(root: Message | CommandInteraction) {
-    this.entity = root;
-    if ((root as Message).content) {
-      this.type = InteractionType.MessageComponent;
-    } else if ((root as CommandInteraction).applicationId) {
-      this.type = InteractionType.ApplicationCommand;
-    } else {
-      throw new TypeError(
-        `root argument must be of type Message or CommandInteraction`
-      );
+  /** The guild used for the trivia game.
+   * @type {Guild}
+   * @readonly
+   */
+  public readonly guild: Guild;
+
+  /**
+   * The raw component this component uses.
+   * @type {DiscordComponentResolvable}
+   * @readonly
+   */
+  public readonly component: DiscordComponentResolvable;
+
+  /**
+   * The member who instantiated the root component.
+   * @type {GuildMember}
+   * @readonly
+   */
+  public readonly member: GuildMember;
+
+  /**
+   * Used to reply to an interaction or message.
+   * @param {InteractionReplyOptions | BaseMessageOptions} args
+   */
+  public reply: (
+    args: InteractionReplyOptions | BaseMessageOptions
+  ) => Promise<Message<boolean>>;
+
+  /**
+   * Used to reply to an interaction.
+   * @param {InteractionReplyOptions} args
+   * @returns {Promise<Message<boolean>>}
+   * @private
+   */
+  #applicationCommandReply(
+    args: InteractionReplyOptions
+  ): Promise<Message<boolean>> {
+    return (this.component as CommandInteraction).reply({
+      ...args,
+      fetchReply: true,
+    });
+  }
+
+  /**
+   * Used to reply to a message.
+   * @param {BaseMessageOptions} args
+   * @returns {Promise<Message<boolean>>}
+   * @private
+   */
+  #messageReply(args: BaseMessageOptions): Promise<Message<boolean>> {
+    return (this.component as Message).reply(args);
+  }
+
+  /**
+   * @param {DiscordComponentResolvable} root The root component data.
+   */
+  constructor(root: DiscordComponentResolvable) {
+    if (![2, 3].includes(root.type)) {
+      throw "Invalid Root!";
     }
 
-    this.channel = root.channel as TextBasedChannel;
-    this.guild = root.guild as Guild;
-    this.hostMember = root.member as GuildMember;
+    if (root.channel === null) throw TypeError("The provided channel is null");
+    if (root.guild === null) throw TypeError("The provided guild is null");
+
+    this.type = root.type === InteractionType.ApplicationCommand ? 2 : 3;
+    this.member = root.member as GuildMember;
+    this.channel = root.channel;
+    this.guild = root.guild;
+    this.component = root;
+    this.reply =
+      root.type === InteractionType.ApplicationCommand
+        ? this.#applicationCommandReply
+        : this.#messageReply;
   }
 }
