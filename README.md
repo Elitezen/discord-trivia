@@ -1,11 +1,9 @@
-﻿![Banner](Images/banner.svg)
+﻿![Banner](images/banner_transparent.png)
 
-# Discord Trivia
-discord-trivia is a NodeJS library which builds on top of [open-trivia-db](https://github.com/Elitezen/open-trivia-db-wrapper) and [Discord.JS](https://github.com/discordjs/discord.js/) to easily integrate trivia matches with your Discord client.
+Discord Trivia is a Node.js library which builds on top of [open-trivia-db](https://github.com/Elitezen/open-trivia-db-wrapper) and [Discord.js](https://github.com/discordjs/discord.js/) to easily integrate trivia games into your Discord.js client.
 
-Guide: https://dev.to/elitezen/code-fully-fledged-trivia-games-in-discordjs-ge8
-
-Website: https://elitezen.github.io/discord-trivia-website/
+**📑 Guide:** https://dev.to/elitezen/code-fully-fledged-trivia-games-in-discordjs-ge8<br/>
+**🌐 Website:** https://elitezen.github.io/discord-trivia-website/
 
 
 ## 1.2.3 🐛
@@ -16,20 +14,29 @@ Website: https://elitezen.github.io/discord-trivia-website/
 ## Installation
 Requires Discord.JS v14
 
-```
-npm i discord-trivia
+```bash
+npm install discord-trivia
+# or using yarn
+yarn add discord-trivia
 ```
 
-For **Discord.JS v13**
+For **Discord.js v13**
 
+```bash
+npm install discord-trivia@1.1.0
+# or using yarn
+yarn add discord-trivia@1.1.0
 ```
-npm i discord-trivia@1.1.0
-```
+
+## Support Server
+Join our support server for help & questions about open-trivia-db or discord-trivia.
+
+[![](http://invidget.switchblade.xyz/wtwM4HhbAr)](https://discord.gg/wtwM4HhbAr)
 
 ## Example Usage
 Adjust to your command handler as necessary.
 
-### **/** Using Slash Commands
+### 🤖 Using Slash Commands
 ```js
 import { TriviaCommandBuilder, TriviaManager } from 'discord-trivia';
 
@@ -68,8 +75,8 @@ client.on('messageCreate', message => {
 });
 ```
 
-# ✨ Customizable
-Discord Trivia Gives you the power to customize your matches as you wish.
+## ✨ Customization
+Discord Trivia Gives you the power to customize your trivia games as you wish.
 
 ### Questions
 Discord Trivia games are powered by [open-trivia-db](https://github.com/Elitezen/open-trivia-db-wrapper), which is a wrapper for the [Open Trivia Database](https://opentdb.com/) API. You can declare the exact type of questions you wish to be part of a match via [TriviaGameOptions](#triviagameoptions)
@@ -86,10 +93,12 @@ const game = trivia.createGame(interaction, {
 });
 ```
 
-**Tip**: Install open-trivia-db to your project to recieve tools for OpenTDB, including intellisense on longer OpenTDB category names.
+**💡 Tip**: Install open-trivia-db to your project to recieve tools for OpenTDB, including intellisense on longer OpenTDB category names.
 
-```
-npm i open-trivia-db
+```bash
+npm install open-trivia-db
+# or using yarn
+yarn add open-trivia-db
 ```
 
 ```js
@@ -155,7 +164,7 @@ const game = trivia.createGame(interaction, {
 });
 ```
 
-### Theme
+### 🎨 Theme
 Edit the color of the embeds via [TriviaManagerOptions](documentation#interfaces-triviamanageroptions)
 
 ```js
@@ -172,7 +181,7 @@ const randomColorTrivia = new TriviaManager({
 });
 ```
 
-### Embed Image
+### 🖼️ Embed Image
 Edit the default embed image.
 
 ```js
@@ -325,8 +334,3 @@ interface QuestionData {
 
 # Contributing
 [Read here for contributing](https://github.com/Elitezen/discord-trivia/blob/main/CONTRIBUTING.md)
-
-# Support Server
-Click to join:
-
-[![](http://invidget.switchblade.xyz/wtwM4HhbAr)](https://discord.gg/wtwM4HhbAr)
