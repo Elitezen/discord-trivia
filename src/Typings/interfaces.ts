@@ -40,7 +40,6 @@ export interface LockedGameOptionsEntry {
 export interface TriviaCommandBuilderOptions {
   name: string;
   description: string;
-  asSubcommand?: boolean;
 }
 
 export interface TriviaGameData {
