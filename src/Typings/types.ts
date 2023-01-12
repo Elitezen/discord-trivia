@@ -7,17 +7,22 @@ import type {
   Collection,
   Snowflake,
 } from "discord.js";
-import { CategoryNameType, Question, QuestionOptions } from "open-trivia-db";
+import { CategoryNameType, CategoryResolvable, Question, QuestionDifficultyType, QuestionOptions, QuestionTypes } from "open-trivia-db";
 import TriviaPlayer from "../Classes/TriviaPlayer";
-const replyCommand: CommandInteraction = null as unknown as CommandInteraction;
-const replyMessage: Message = null as unknown as Message;
+const replyCommand: CommandInteraction = {} as CommandInteraction;
+const replyMessage: Message = {} as Message;
+
 /**
  * Represents a developer-made question.
  */
-export type CustomQuestion = Omit<
-  Question,
-  "category" | "allAnswers" | "checkAnswer"
-> & { category: CategoryNameType };
+export type CustomQuestion<T extends 'multiple' | 'boolean'> = {
+  category: CategoryResolvable;
+  type: T;
+  difficulty: QuestionDifficultyType;
+  value: string;
+  correctAnswer: string;
+  incorrectAnswers: T extends QuestionTypes.Boolean ? [string] : [string, string, string];
+}
 
 /**
  * A Discord command interaction or message.

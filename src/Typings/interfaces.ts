@@ -56,7 +56,7 @@ export interface GameQuestionOptions extends Record<string, any> {
   category?: CategoryNameType | number;
   difficulty?: QuestionDifficultyType | QuestionDifficulties;
   type?: QuestionTypeType;
-  customQuestions?: CustomQuestion[] | null;
+  customQuestions?: CustomQuestion<'boolean' | 'multiple'>[] | null;
 }
 
 /**
@@ -64,9 +64,9 @@ export interface GameQuestionOptions extends Record<string, any> {
  */
 export interface GameQuestion {
   value: string;
-  category: string;
+  category: CategoryNameType;
   difficulty: QuestionDifficultyType;
-  type: QuestionTypes | QuestionTypeType;
+  type: QuestionTypes;
   correctAnswer: string;
   incorrectAnswers: string[];
   allAnswers: string[];

@@ -1,5 +1,5 @@
 import { EmbedBuilder } from "discord.js";
-import { Category, QuestionTypes } from "open-trivia-db";
+import { Category, CategoryNameType, QuestionTypes } from "open-trivia-db";
 import { GameQuestion } from "../Typings/interfaces";
 import TriviaGame from "./TriviaGame";
 import TriviaPlayer from "./TriviaPlayer";
@@ -39,8 +39,18 @@ export default class EmbedGenerator {
    * @returns {EmbedBuilder}
    */
   gameQueue(): EmbedBuilder {
+    const { amount, category, difficulty } = this.game.gameQuestionOptions;
+    const categoryName:CategoryNameType | 'Randomized' = !!category ? 
+      isNaN(+category) ? category as CategoryNameType : Category.nameById(+category)!
+      : 'Randomized';
+
     const embed = new EmbedBuilder()
       .setTitle(`${this.game.host.displayName} is starting a trivia game!`)
+      .addFields(
+        { name: 'Question Amount', value: amount.toString(), inline: true  },
+        { name: 'Category', value: categoryName, inline: true },
+        { name: 'Difficulty', value:difficulty || 'Randomized', inline: true }
+      )
       .setDescription("Click the **Join** button to enter!")
       .setImage(this.game.decoration.embedImage);
     return this.applyDecoration(embed);

@@ -32,6 +32,7 @@ import {
   Category,
   CategoryNameType,
   getQuestions,
+  MinifiedCategoryData,
   Question,
   QuestionTypes,
   Util,
@@ -300,7 +301,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
   public setQuestionOptions(options: GameQuestionOptions): this {
     if (options.category)
       options.category = isNaN(+options.category)
-        ? Category.idByName(options.category as unknown as CategoryNameType)!
+        ? Category.idByName(options.category as CategoryNameType)!
         : options.category;
     this.gameQuestionOptions = Object.assign(
       TriviaGame.gameQuestionOptionDefaults,
@@ -498,12 +499,12 @@ class TriviaGame extends EventEmitter implements TriviaGame {
       this.questions = parseQuestions(apiQuestions);
     }
 
-    function parseQuestions(qs: (Question | CustomQuestion)[]): GameQuestion[] {
+    function parseQuestions(qs: (Question | CustomQuestion<'multiple' | 'boolean'>)[]): GameQuestion[] {
       return qs.map((q) => {
         return {
           value: q.value,
           category:
-            typeof q.category === "string" ? q.category : q.category.name,
+            typeof q.category === "string" ? q.category : typeof Number(q.category) === 'number' ? Category.nameById(Number(q.category))! : (q.category as MinifiedCategoryData).name as CategoryNameType,
           difficulty: q.difficulty,
           correctAnswer: q.correctAnswer,
           incorrectAnswers: q.incorrectAnswers,
@@ -511,7 +512,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
             q.correctAnswer,
             ...q.incorrectAnswers,
           ]),
-          type: q.type,
+          type: q.type === 'boolean' ? QuestionTypes.Boolean : QuestionTypes.Multiple,
           checkAnswer: (str) => str === q.correctAnswer,
         };
       });
@@ -715,30 +716,6 @@ class TriviaGame extends EventEmitter implements TriviaGame {
 
     await this.channel.send({
       content: this.textOutputs.gameFailedRequirements(),
-    });
-  }
-
-  public static validateCustomQuestions(arr:Partial<CustomQuestion>[]):CustomQuestion[] {
-    return arr.map(q => {
-      if (!q.value) {
-        throw new DiscordTriviaError('All custom questions must have a value property');
-      } else if (q.correctAnswer === undefined) {
-        throw new DiscordTriviaError(`All custom questions must have a correctAnswer property`);
-      } else if (!q.incorrectAnswers || !Array.isArray(q.incorrectAnswers) || q.incorrectAnswers.length < 1) {
-        throw new DiscordTriviaError(`All custom questions must have an incorrectAnswers property as a string array with atleast 1 element. Received ${JSON.stringify(q.incorrectAnswers)}`);
-      }
-
-      if (!q?.type) {
-        if (q.incorrectAnswers.length === 1) {
-          q.type === 'boolean';
-        } else if (q.incorrectAnswers.length === 2) {
-          q.incorrectAnswers = [...q.incorrectAnswers]
-        } else {
-          q.incorrectAnswers = q.incorrectAnswers.slice(0, 2);
-        }
-      }
-
-      return q as CustomQuestion;
     });
   }
 }
