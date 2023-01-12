@@ -88,12 +88,12 @@ export interface Player {
 /**
  * A record of a game's text outputting.
  */
-export interface TextOutputs {
-  alreadyQueued: (user:User) => string | string;
-  preparingQuestion: () => string | string;
-  notInMatch: () => string | string;
-  alreadyChoseAnswer: (user:User) => string | string;
-  answerLockedIn: (user:User, timeElapsed:number) => string | string;
-  gameFailedRequirements: () => string | string
-  memberJoinedGame: (member:GuildMember) => string | string;
+export interface TextOutputs extends Record<string, (...args:any[]) => string | string> {
+  alreadyQueued: (user:User) => string;
+  preparingQuestion: () => string;
+  notInMatch: () => string;
+  alreadyChoseAnswer: (user:User) => string;
+  answerLockedInPrivate: (user:User, timeElapsed:number) => string;
+  gameFailedRequirements: () => string
+  memberJoinedGame: (member:GuildMember) => string;
 }
