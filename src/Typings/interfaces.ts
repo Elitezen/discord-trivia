@@ -1,6 +1,8 @@
 import { ButtonStyle, GuildMember, ColorResolvable, User } from "discord.js";
 import {
+  BooleanString,
   CategoryNameType,
+  IncorrectAnswers,
   QuestionDifficulties,
   QuestionDifficultyType,
   QuestionTypes,
@@ -64,12 +66,12 @@ export interface GameQuestionOptions extends Record<string, any> {
  */
 export interface GameQuestion {
   value: string;
-  category: CategoryNameType;
+  category: string;
   difficulty: QuestionDifficultyType;
   type: QuestionTypes;
   correctAnswer: string;
-  incorrectAnswers: string[];
-  allAnswers: string[];
+  incorrectAnswers: IncorrectAnswers | BooleanString;
+  allAnswers: string[] | `${boolean}`[];
   checkAnswer: (str: string) => boolean;
 }
 

@@ -40,7 +40,7 @@
   "dependencies": {
     "discord-api-types": "^0.37.21",
     "discord.js": "^14.7.1",
-    "open-trivia-db": "^2.0.0"
+    "open-trivia-db": "^2.1.1"
   },
   "devDependencies": {
     "@types/node": "^18.11.10",

@@ -85,6 +85,7 @@ export default class EmbedGenerator {
    * @returns {EmbedBuilder}
    */
   question(question: GameQuestion): EmbedBuilder {
+    console.log(question)
     const embed = new EmbedBuilder()
       .addFields(
         { name: "Category", value: question.category },

@@ -29,9 +29,11 @@ import { GameEvents, GameStates } from "../Typings/enums";
 import { CustomQuestion, Leaderboard } from "../Typings/types";
 import { GameQuestionOptions } from "../Typings/interfaces";
 import {
+  BooleanString,
   Category,
   CategoryNameType,
   getQuestions,
+  IncorrectAnswers,
   MinifiedCategoryData,
   Question,
   QuestionTypes,
@@ -427,9 +429,11 @@ class TriviaGame extends EventEmitter implements TriviaGame {
       max: this.gameOptions.maxPlayerCount,
     });
 
-    collector.on("collect", this.handleMemberJoin);
+    const handler = this.handleMemberJoin.bind(this);
+
+    collector.on("collect", handler);
     collector.on("end", async (_) => {
-      if (collector.endReason !== "limit") return this.handleQueueTimeout();
+      if (collector.endReason !== "limit" && this.players.size < this.gameOptions.minPlayerCount) return this.handleQueueTimeout();
 
       try {
         await this.initializeGame();
@@ -500,6 +504,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
     }
 
     function parseQuestions(qs: (Question | CustomQuestion<'multiple' | 'boolean'>)[]): GameQuestion[] {
+      console.log(qs)
       return qs.map((q) => {
         return {
           value: q.value,
