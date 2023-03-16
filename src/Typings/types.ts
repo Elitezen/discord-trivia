@@ -16,11 +16,11 @@ const replyMessage: Message = {} as Message;
  * Represents a developer-made question.
  */
 export type CustomQuestion<T extends 'multiple' | 'boolean'> = {
-  category: number | string;
+  category: string;
   type: T;
   difficulty: QuestionDifficultyType;
   value: string;
-  correctAnswer: string;
+  correctAnswer: string | BooleanString;
   incorrectAnswers: T extends 'multiple' ? IncorrectAnswers : BooleanString;
 }
 

@@ -32,7 +32,7 @@ export class BaseCustomQuestionBuilder {
    */
   setCategory(category: number | string):this {
     if (isNaN(+category)) {
-      this.data.category = category;
+      this.data.category = category as string;
     } else {
       this.data.category = Category.nameById(+category) || "Custom"
     }

@@ -1,5 +1,6 @@
 import { ButtonStyle, GuildMember, ColorResolvable, User } from "discord.js";
 import {
+  AllAnswers,
   BooleanString,
   CategoryNameType,
   IncorrectAnswers,
@@ -9,7 +10,7 @@ import {
   QuestionTypeType,
 } from "open-trivia-db";
 import TriviaGame from "../Classes/TriviaGame";
-import { CustomQuestion, Leaderboard } from "./types";
+import { Leaderboard } from "./types";
 
 /**
  * Decoration options for embeds and buttons.
@@ -58,7 +59,6 @@ export interface GameQuestionOptions extends Record<string, any> {
   category?: CategoryNameType | number;
   difficulty?: QuestionDifficultyType | QuestionDifficulties;
   type?: QuestionTypeType;
-  customQuestions?: CustomQuestion<'boolean' | 'multiple'>[] | null;
 }
 
 /**
@@ -71,7 +71,7 @@ export interface GameQuestion {
   type: QuestionTypes;
   correctAnswer: string;
   incorrectAnswers: IncorrectAnswers | BooleanString;
-  allAnswers: string[] | `${boolean}`[];
+  allAnswers: string[];
   checkAnswer: (str: string) => boolean;
 }
 

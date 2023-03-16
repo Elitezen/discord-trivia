@@ -10,6 +10,7 @@ import {
   CacheType,
   ButtonStyle,
   ColorResolvable,
+  TextChannel,
 } from "discord.js";
 import {
   DecorationOptions,
@@ -29,7 +30,7 @@ import { GameEvents, GameStates } from "../Typings/enums";
 import { CustomQuestion, Leaderboard } from "../Typings/types";
 import { GameQuestionOptions } from "../Typings/interfaces";
 import {
-  BooleanString,
+  AllAnswers,
   Category,
   CategoryNameType,
   getQuestions,
@@ -44,7 +45,6 @@ import {
   buttonRowChoicesMultiple,
   buttonRowQueue,
 } from "../Components/messageButtonRows";
-import DiscordTriviaError from "./DiscordTriviaError";
 
 const sleep = promisify(setTimeout);
 
@@ -98,10 +98,10 @@ class TriviaGame extends EventEmitter implements TriviaGame {
 
   /**
    * The channel of this trivia game.
-   * @type {TextBasedChannel}
+   * @type {TextChannel}
    * @readonly
    */
-  public readonly channel: TextBasedChannel;
+  public readonly channel: TextChannel;
 
   /**
    * The component of this trivia game.
@@ -251,10 +251,10 @@ class TriviaGame extends EventEmitter implements TriviaGame {
 
   /**
    * Returns the current data of this game.
-   * @param {boolean} endedNow Whether this game has finalized.
+   * @param {boolean} hasEnded Whether this game has finalized.
    * @returns {GameData}
    */
-  public data(endedNow: boolean): GameData {
+  public data(hasEnded: boolean): GameData {
     const category =
       typeof this.gameQuestionOptions.category !== "undefined"
         ? isNaN(+this.gameQuestionOptions.category)
@@ -270,9 +270,32 @@ class TriviaGame extends EventEmitter implements TriviaGame {
           : category,
       difficulty: this.gameQuestionOptions.difficulty || null,
       amount: this.gameQuestionOptions.amount,
-      timeEnd: endedNow ? Date.now() : null,
+      timeEnd: hasEnded ? Date.now() : null,
       players: this.leaderboard,
     };
+  }
+
+  public setCustomQuestions(questions: CustomQuestion<QuestionTypes>[]):this {
+    const formattedQuestions:GameQuestion[] = questions.map(q => {
+      return {
+        value: q.value,
+        category: q.category,
+        difficulty: q.difficulty,
+        type: q.type,
+        correctAnswer: q.correctAnswer,
+        incorrectAnswers: q.incorrectAnswers,
+        allAnswers: q.type === QuestionTypes.Boolean 
+          ? ['true', 'false'] 
+          : Util.shuffleArray<string>([q.correctAnswer, ...(q.incorrectAnswers as IncorrectAnswers)]) as AllAnswers<QuestionTypes.Multiple>,
+        checkAnswer(str:string) {
+          return str.toLowerCase() === q.correctAnswer.toLowerCase()
+        }
+      }
+    });
+
+    this.questions = [...formattedQuestions];
+
+    return this;
   }
 
   /**
@@ -300,15 +323,17 @@ class TriviaGame extends EventEmitter implements TriviaGame {
    * @param {GameQuestionOption} options
    * @returns {this}
    */
-  public setQuestionOptions(options: GameQuestionOptions): this {
+  public setQuestionOptions(options: Omit<GameQuestionOptions, 'customQuestions'>): this {
     if (options.category)
       options.category = isNaN(+options.category)
         ? Category.idByName(options.category as CategoryNameType)!
         : options.category;
+
     this.gameQuestionOptions = Object.assign(
       TriviaGame.gameQuestionOptionDefaults,
       options
     );
+
     return this;
   }
 
@@ -483,37 +508,19 @@ class TriviaGame extends EventEmitter implements TriviaGame {
   private async initializeGame(): Promise<void> {
     this.leaderboard = this.players;
     const apiQuestions = await getQuestions(this.gameQuestionOptions);
-    if (this.gameQuestionOptions.customQuestions) {
-      if (
-        this.gameQuestionOptions.amount <=
-        this.gameQuestionOptions.customQuestions.length
-      ) {
-        this.gameQuestionOptions.customQuestions =
-          this.gameQuestionOptions.customQuestions.slice(
-            0,
-            this.gameQuestionOptions.amount
-          );
-      } else {
-        this.questions = parseQuestions([
-          ...apiQuestions,
-          ...this.gameQuestionOptions.customQuestions,
-        ]);
-      }
-    } else {
-      this.questions = parseQuestions(apiQuestions);
-    }
+    
+    this.questions = [...this.questions, ...parseQuestions(apiQuestions)]
 
-    function parseQuestions(qs: (Question | CustomQuestion<'multiple' | 'boolean'>)[]): GameQuestion[] {
-      console.log(qs)
+    function parseQuestions(qs: (Question<unknown> | GameQuestion)[]): GameQuestion[] {
       return qs.map((q) => {
         return {
           value: q.value,
           category:
-            typeof q.category === "string" ? q.category : typeof Number(q.category) === 'number' ? Category.nameById(Number(q.category))! : (q.category as MinifiedCategoryData).name as CategoryNameType,
+            typeof q.category === "string" ? q.category : q.category.name,
           difficulty: q.difficulty,
           correctAnswer: q.correctAnswer,
           incorrectAnswers: q.incorrectAnswers,
-          allAnswers: Util.shuffleArray([
+          allAnswers: q.type === QuestionTypes.Boolean ? ['true', 'false'] : Util.shuffleArray([
             q.correctAnswer,
             ...q.incorrectAnswers,
           ]),
@@ -628,11 +635,13 @@ class TriviaGame extends EventEmitter implements TriviaGame {
     this.messages.set(msg.id, msg.delete);
 
     player.hasAnswered = true;
+    console.log(interaction.customId)
     const answer = (
       question.type == QuestionTypes.Multiple
         ? question.allAnswers
-        : ["False", "True"]
+        : ['false', 'true']
     )[Number(interaction.customId)];
+    console.log(answer)
 
     player.setIsCorrect(question.correctAnswer === answer);
 

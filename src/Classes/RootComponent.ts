@@ -1,12 +1,13 @@
 import {
   InteractionType,
-  TextBasedChannel,
+  TextChannel,
   Guild,
   CommandInteraction,
   InteractionReplyOptions,
   BaseMessageOptions,
   Message,
   GuildMember,
+  ChannelType,
 } from "discord.js";
 import {
   DiscordComponentResolvable,
@@ -26,10 +27,10 @@ export default class RootComponent {
 
   /**
    * The channel used for the trivia game.
-   * @type {TextBasedChannel}
+   * @type {TextChannel}
    * @readonly
    */
-  public readonly channel: TextBasedChannel;
+  public readonly channel: TextChannel;
 
   /** The guild used for the trivia game.
    * @type {Guild}
@@ -93,6 +94,7 @@ export default class RootComponent {
     }
 
     if (root.channel === null) throw TypeError("The provided channel is null");
+    if (root.channel.type !== ChannelType.GuildText) throw ("The provided channel is not of type GuildText")
     if (root.guild === null) throw TypeError("The provided guild is null");
 
     this.type = root.type === InteractionType.ApplicationCommand ? 2 : 3;

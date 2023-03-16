@@ -12,6 +12,8 @@ import { GameStates, GameEvents } from "./src/Typings/enums";
 import { DecorationOptions, GameOptions, GameData, GameQuestionOptions, GameQuestion, Player } from "./src/Typings/interfaces";
 import { CustomQuestion, DiscordComponentResolvable, DiscordComponentResolvableEnum, CommandInteractionReply, MessageReply, Leaderboard } from "./src/Typings/types";
 
+import { QuestionTypes } from "open-trivia-db";
+
 export {
   DiscordTriviaError,
   EmbedGenerator,
@@ -36,7 +38,8 @@ export {
   DiscordComponentResolvableEnum,
   CommandInteractionReply,
   MessageReply, 
-  Leaderboard
+  Leaderboard,
+  QuestionTypes
 }
 
 // custom question validating, text output cusotmization README, Custom question builder
