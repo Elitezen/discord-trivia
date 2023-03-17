@@ -45,6 +45,8 @@ import {
   buttonRowChoicesMultiple,
   buttonRowQueue,
 } from "../Components/messageButtonRows";
+import { BooleanQuestion, MultipleChoiceQuestion } from "./CustomQuestionBuilders";
+import DiscordTriviaError from "./DiscordTriviaError";
 
 const sleep = promisify(setTimeout);
 
@@ -275,20 +277,25 @@ class TriviaGame extends EventEmitter implements TriviaGame {
     };
   }
 
-  public setCustomQuestions(questions: CustomQuestion<QuestionTypes>[]):this {
+  public setCustomQuestions(questions: (CustomQuestion<QuestionTypes> | BooleanQuestion | MultipleChoiceQuestion)[]):this {
     const formattedQuestions:GameQuestion[] = questions.map(q => {
+      const isBuilder = q instanceof BooleanQuestion || q instanceof MultipleChoiceQuestion;
+      const _q = isBuilder ? q.data : q;
+
+      if (!_q.value) throw new DiscordTriviaError('Custom Question is missing .value');
+      if (!_q.type) throw new DiscordTriviaError('Custom Question is missing .type');
+      if (!_q.correctAnswer) throw new DiscordTriviaError('Custom Question is missing _q.correctAnswer');
+
       return {
-        value: q.value,
-        category: q.category,
-        difficulty: q.difficulty,
-        type: q.type,
-        correctAnswer: q.correctAnswer,
-        incorrectAnswers: q.incorrectAnswers,
-        allAnswers: q.type === QuestionTypes.Boolean 
-          ? ['true', 'false'] 
-          : Util.shuffleArray<string>([q.correctAnswer, ...(q.incorrectAnswers as IncorrectAnswers)]) as AllAnswers<QuestionTypes.Multiple>,
-        checkAnswer(str:string) {
-          return str.toLowerCase() === q.correctAnswer.toLowerCase()
+        value:  _q.value,
+        category: _q.category || 'Custom',
+        difficulty: _q.difficulty || 'easy',
+        type: _q.type,
+        correctAnswer: _q.correctAnswer,
+        incorrectAnswers: _q.incorrectAnswers || (_q.correctAnswer === 'true' ? 'false' : 'true'),
+        allAnswers: _q.type === QuestionTypes.Boolean ? ['true', 'false'] : Util.shuffleArray([_q.correctAnswer, ..._q.incorrectAnswers as IncorrectAnswers]),
+        checkAnswer: function(str:string) {
+          return str.toLowerCase() === this.correctAnswer.toLowerCase()
         }
       }
     });

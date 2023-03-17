@@ -1,5 +1,5 @@
-import { BooleanString, Category, CategoryNames, IncorrectAnswers, QuestionDifficulties, QuestionDifficultyType, QuestionTypeType } from "open-trivia-db";
-import { CustomQuestion } from "../Typings/types";
+import { BooleanString, Category, IncorrectAnswers, QuestionDifficultyType, QuestionTypes } from "open-trivia-db";
+import { GameQuestion } from "../Typings/interfaces";
 
 /**
  * The base for custom question builders.
@@ -7,9 +7,9 @@ import { CustomQuestion } from "../Typings/types";
 export class BaseCustomQuestionBuilder {
   /**
    * This question's data.
-   * @type {Partial<CustomQuestion<'multiple' | 'boolean'>>}
+   * @type {Partial<GameQuestion>}
    */
-  public data: Partial<CustomQuestion<'multiple' | 'boolean'>>;
+  public data: Partial<GameQuestion>;
 
   constructor() {
     this.data = {};
@@ -27,10 +27,10 @@ export class BaseCustomQuestionBuilder {
 
   /**
    * Sets this question's category.
-   * @param {number | string} category 
+   * @param {string} category 
    * @returns {this}
    */
-  setCategory(category: number | string):this {
+  setCategory(category: string):this {
     if (isNaN(+category)) {
       this.data.category = category as string;
     } else {
@@ -54,10 +54,10 @@ export class BaseCustomQuestionBuilder {
 /**
  * Builder for a true/false custom question
  */
-export class CustomQuestionBuilderBoolean extends BaseCustomQuestionBuilder {
+export class BooleanQuestion extends BaseCustomQuestionBuilder {
   constructor() {
     super();
-    this.data.type = 'boolean';
+    this.data.type = QuestionTypes.Boolean;
   }
 
   setCorrectAnswer(answer: BooleanString):this {
@@ -70,10 +70,10 @@ export class CustomQuestionBuilderBoolean extends BaseCustomQuestionBuilder {
 /**
  * Builder for a multiple choice custom question
  */
-export class CustomQuestionBuilderMultipleChoice extends BaseCustomQuestionBuilder {
+export class MultipleChoiceQuestion extends BaseCustomQuestionBuilder {
   constructor() {
     super();
-    this.data.type = 'multiple';
+    this.data.type = QuestionTypes.Multiple;
   }
 
   /**
@@ -97,10 +97,7 @@ export class CustomQuestionBuilderMultipleChoice extends BaseCustomQuestionBuild
   }
 }
 
-/**
- * Static class for providing custom question builders
- */
-export class CustomQuestionBuilder {
-  static Multiple = CustomQuestionBuilderMultipleChoice;
-  static Boolean = CustomQuestionBuilderBoolean;
-}
+export const CustomQuestions = {
+  Boolean: BooleanQuestion,
+  Multiple: MultipleChoiceQuestion
+};

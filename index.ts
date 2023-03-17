@@ -1,3 +1,4 @@
+import { BaseCustomQuestionBuilder, BooleanQuestion, MultipleChoiceQuestion, CustomQuestions } from "./src/Classes/CustomQuestionBuilders";
 import DiscordTriviaError from "./src/Classes/DiscordTriviaError";
 import EmbedGenerator from "./src/Classes/EmbedGenerator";
 import RootComponent from "./src/Classes/RootComponent";
@@ -15,6 +16,10 @@ import { CustomQuestion, DiscordComponentResolvable, DiscordComponentResolvableE
 import { QuestionTypes } from "open-trivia-db";
 
 export {
+  BaseCustomQuestionBuilder, 
+  BooleanQuestion, 
+  MultipleChoiceQuestion,
+  CustomQuestions,
   DiscordTriviaError,
   EmbedGenerator,
   RootComponent, 
