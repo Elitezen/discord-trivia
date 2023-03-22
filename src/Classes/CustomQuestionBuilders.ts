@@ -1,4 +1,11 @@
-import { BooleanString, Category, IncorrectAnswers, QuestionDifficultyType, QuestionTypes } from "open-trivia-db";
+import {
+  BooleanString,
+  Category,
+  CategoryNames,
+  IncorrectAnswers,
+  QuestionDifficultyType,
+  QuestionTypes,
+} from "open-trivia-db";
 import { GameQuestion } from "../Typings/interfaces";
 
 /**
@@ -17,24 +24,24 @@ export class BaseCustomQuestionBuilder {
 
   /**
    * Sets this question's value.
-   * @param {string} value 
+   * @param {string} value
    * @returns {this}
    */
-  setValue(value:string):this {
+  setValue(value: string): this {
     this.data.value = value;
     return this;
   }
 
   /**
    * Sets this question's category.
-   * @param {string} category 
+   * @param {string} category
    * @returns {this}
    */
-  setCategory(category: string):this {
+  setCategory(category: string | CategoryNames): this {
     if (isNaN(+category)) {
       this.data.category = category as string;
     } else {
-      this.data.category = Category.nameById(+category) || "Custom"
+      this.data.category = Category.nameById(+category) || "Custom";
     }
 
     return this;
@@ -42,10 +49,10 @@ export class BaseCustomQuestionBuilder {
 
   /**
    * Sets this question's difficulty.
-   * @param {QuestionDifficultyType} difficulty 
+   * @param {QuestionDifficultyType} difficulty
    * @returns {this}
    */
-  setDifficulty(difficulty: QuestionDifficultyType):this {
+  setDifficulty(difficulty: QuestionDifficultyType): this {
     this.data.difficulty = difficulty;
     return this;
   }
@@ -60,9 +67,9 @@ export class BooleanQuestion extends BaseCustomQuestionBuilder {
     this.data.type = QuestionTypes.Boolean;
   }
 
-  setCorrectAnswer(answer: BooleanString):this {
+  setCorrectAnswer(answer: BooleanString): this {
     this.data.correctAnswer = answer;
-    this.data.incorrectAnswers = answer === 'true' ? 'false' : 'true';
+    this.data.incorrectAnswers = answer === "true" ? "false" : "true";
     return this;
   }
 }
@@ -81,7 +88,7 @@ export class MultipleChoiceQuestion extends BaseCustomQuestionBuilder {
    * @param {string} answer
    * @returns {this}
    */
-  setCorrectAnswer(answer: string):this {
+  setCorrectAnswer(answer: string): this {
     this.data.correctAnswer = answer;
     return this;
   }
@@ -91,13 +98,13 @@ export class MultipleChoiceQuestion extends BaseCustomQuestionBuilder {
    * @param {IncorrectAnswers} incAnswers
    * @returns {this}
    */
-  setIncorrectAnswers(incAnswers: IncorrectAnswers):this {
+  setIncorrectAnswers(incAnswers: IncorrectAnswers): this {
     this.data.incorrectAnswers = incAnswers;
     return this;
   }
 }
 
-export const CustomQuestions = {
+export const CustomQuestionBuilder = {
   Boolean: BooleanQuestion,
-  Multiple: MultipleChoiceQuestion
+  Multiple: MultipleChoiceQuestion,
 };

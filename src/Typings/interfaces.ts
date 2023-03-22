@@ -90,12 +90,15 @@ export interface Player {
 /**
  * A record of a game's text outputting.
  */
-export interface TextOutputs extends Record<string, (...args:any[]) => string | string> {
-  alreadyQueued: (user:User) => string;
+export interface TextOutputs
+  extends Record<string, (...args: any[]) => string | string> {
+  alreadyQueued: (user: User) => string;
   preparingQuestion: () => string;
   notInMatch: () => string;
-  alreadyChoseAnswer: (user:User) => string;
-  answerLockedInPrivate: (user:User, timeElapsed:number) => string;
-  gameFailedRequirements: () => string
-  memberJoinedGame: (member:GuildMember) => string;
+  alreadyChoseAnswer: (user: User) => string;
+  answerLockedInPrivate: (user: User, timeElapsed: number) => string;
+  gameFailedRequirements: () => string;
+  memberJoinedGamePrivate: () => string;
+  // answerLockedInPublic: (player:Player) => `**${player.member.displayName}** has locked in!`
+  // memberJoinedGame: (member:GuildMember) => string;
 }

@@ -40,19 +40,31 @@ export default class EmbedGenerator {
    */
   gameQueue(): EmbedBuilder {
     const { amount, category, difficulty } = this.game.gameQuestionOptions;
-    const categoryName:CategoryNameType | 'Randomized' = !!category ? 
-      isNaN(+category) ? category as CategoryNameType : Category.nameById(+category)!
-      : 'Randomized';
+    const categoryName: CategoryNameType | "Randomized" = !!category
+      ? isNaN(+category)
+        ? (category as CategoryNameType)
+        : Category.nameById(+category)!
+      : "Randomized";
 
     const embed = new EmbedBuilder()
       .setTitle(`${this.game.host.displayName} is starting a trivia game!`)
-      .addFields(
-        { name: 'Question Amount', value: amount.toString(), inline: true  },
-        { name: 'Category', value: categoryName, inline: true },
-        { name: 'Difficulty', value:difficulty || 'Randomized', inline: true }
-      )
-      .setDescription("Click the **Join** button to enter!")
+      .addFields({
+        name: "Game Info:",
+        value: `${amount} Question${amount > 1 ? "s" : ""} | ${
+          difficulty || "Randomized"
+        } Difficulty | ${categoryName} Category`,
+      })
+      .setFooter({
+        text: "Click the **Join** button to enter!",
+      })
       .setImage(this.game.decoration.embedImage);
+    if (this.game.players.size)
+      embed.addFields({
+        name: "Queue",
+        value: this.game.players
+          .map((p) => `▶️ ${p.member.toString()}`)
+          .join("\n"),
+      });
     return this.applyDecoration(embed);
   }
 
@@ -73,7 +85,7 @@ export default class EmbedGenerator {
       .setDescription("The game is now starting!")
       .addFields({
         name: "Question Amount",
-        value: this.game.gameQuestionOptions.amount.toString(),
+        value: this.game.questions.length.toString(),
       });
     embed.addFields({ name: "Category", value: category });
     return this.applyDecoration(embed);
@@ -85,7 +97,7 @@ export default class EmbedGenerator {
    * @returns {EmbedBuilder}
    */
   question(question: GameQuestion): EmbedBuilder {
-    console.log(question)
+    const playersAnswered = this.game.players.filter((p) => p.hasAnswered);
     const embed = new EmbedBuilder()
       .addFields(
         { name: "Category", value: question.category },
@@ -103,6 +115,10 @@ export default class EmbedGenerator {
           .map((ans, i) => `${["🇦", "🇧", "🇨", "🇩"][i]} **${ans}**`)
           .join("\n"),
       });
+    if (playersAnswered.size)
+      embed.setDescription(
+        `\`${playersAnswered.size}/${this.game.players.size} answers locked in\``
+      );
     return this.applyDecoration(embed);
   }
 

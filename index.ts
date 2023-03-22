@@ -1,4 +1,4 @@
-import { BaseCustomQuestionBuilder, BooleanQuestion, MultipleChoiceQuestion, CustomQuestions } from "./src/Classes/CustomQuestionBuilders";
+import { BaseCustomQuestionBuilder, BooleanQuestion, MultipleChoiceQuestion, CustomQuestionBuilder } from "./src/Classes/CustomQuestionBuilders";
 import DiscordTriviaError from "./src/Classes/DiscordTriviaError";
 import EmbedGenerator from "./src/Classes/EmbedGenerator";
 import RootComponent from "./src/Classes/RootComponent";
@@ -13,13 +13,13 @@ import { GameStates, GameEvents } from "./src/Typings/enums";
 import { DecorationOptions, GameOptions, GameData, GameQuestionOptions, GameQuestion, Player } from "./src/Typings/interfaces";
 import { CustomQuestion, DiscordComponentResolvable, DiscordComponentResolvableEnum, CommandInteractionReply, MessageReply, Leaderboard } from "./src/Typings/types";
 
-import { QuestionTypes } from "open-trivia-db";
+import { CategoryNames,  QuestionDifficulties, QuestionTypes } from "open-trivia-db";
 
 export {
   BaseCustomQuestionBuilder, 
   BooleanQuestion, 
   MultipleChoiceQuestion,
-  CustomQuestions,
+  CustomQuestionBuilder,
   DiscordTriviaError,
   EmbedGenerator,
   RootComponent, 
@@ -44,7 +44,7 @@ export {
   CommandInteractionReply,
   MessageReply, 
   Leaderboard,
+  CategoryNames,
+  QuestionDifficulties,
   QuestionTypes
 }
-
-// custom question validating, text output cusotmization README, Custom question builder

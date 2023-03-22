@@ -11,6 +11,7 @@ import {
   ButtonStyle,
   ColorResolvable,
   TextChannel,
+  InteractionCollector,
 } from "discord.js";
 import {
   DecorationOptions,
@@ -30,12 +31,10 @@ import { GameEvents, GameStates } from "../Typings/enums";
 import { CustomQuestion, Leaderboard } from "../Typings/types";
 import { GameQuestionOptions } from "../Typings/interfaces";
 import {
-  AllAnswers,
   Category,
   CategoryNameType,
   getQuestions,
   IncorrectAnswers,
-  MinifiedCategoryData,
   Question,
   QuestionTypes,
   Util,
@@ -45,7 +44,10 @@ import {
   buttonRowChoicesMultiple,
   buttonRowQueue,
 } from "../Components/messageButtonRows";
-import { BooleanQuestion, MultipleChoiceQuestion } from "./CustomQuestionBuilders";
+import {
+  BooleanQuestion,
+  MultipleChoiceQuestion,
+} from "./CustomQuestionBuilders";
 import DiscordTriviaError from "./DiscordTriviaError";
 
 const sleep = promisify(setTimeout);
@@ -53,7 +55,10 @@ const sleep = promisify(setTimeout);
 declare interface TriviaGame {
   on(event: GameEvents.Pending | "pending", listener: () => void): this;
   on(event: GameEvents.Queue | "queue", listener: () => void): this;
-  on(event: GameEvents.MemberJoin | "memberJoin", listener: (member:GuildMember) => void): this;
+  on(
+    event: GameEvents.MemberJoin | "memberJoin",
+    listener: (member: GuildMember) => void
+  ): this;
   on(event: GameEvents.End | "end", listener: (data: GameData) => void): this;
 }
 
@@ -199,12 +204,15 @@ class TriviaGame extends EventEmitter implements TriviaGame {
     preparingQuestion: () => "🕥 **Preparing the next question...**",
     notInMatch: () => "❌ You are not apart of this match",
     alreadyChoseAnswer: (user) => "❗ **You have already chosen an answer**",
-    gameFailedRequirements: () => "Game failed to meet minimum player requirements",
-    answerLockedInPrivate: (user, timeElapsed) => `🔹 Your answer has been locked in!\n\n⚡ **timeElapsed: ${+(
-      timeElapsed / 1000
-    ).toFixed(2)} seconds**`,
-    answerLockedInPublic: (player:Player) => `**${player.member.displayName}** has locked in!`,
-    memberJoinedGame: (member:GuildMember) => `🙌   **${member.displayName}** has joined in!`
+    gameFailedRequirements: () =>
+      "Game failed to meet minimum player requirements",
+    answerLockedInPrivate: (user, timeElapsed) =>
+      `🔹 Your answer has been locked in!\n\n⚡ **timeElapsed: ${+(
+        timeElapsed / 1000
+      ).toFixed(2)} seconds**`,
+    memberJoinedGamePrivate: () => "You have joined the game!",
+    // answerLockedInPublic: (player:Player) => `**${player.member.displayName}** has locked in!`
+    // memberJoinedGame: (member:GuildMember) => string;
   };
 
   /**
@@ -277,27 +285,52 @@ class TriviaGame extends EventEmitter implements TriviaGame {
     };
   }
 
-  public setCustomQuestions(questions: (CustomQuestion<QuestionTypes> | BooleanQuestion | MultipleChoiceQuestion)[]):this {
-    const formattedQuestions:GameQuestion[] = questions.map(q => {
-      const isBuilder = q instanceof BooleanQuestion || q instanceof MultipleChoiceQuestion;
+  /**
+   * Adds user created questions to the game.
+   * @param {(CustomQuestion<QuestionTypes> | BooleanQuestion | MultipleChoiceQuestion)[]} questions The custom questions.
+   * @returns {this}
+   */
+  public setCustomQuestions(
+    questions: (
+      | CustomQuestion<QuestionTypes>
+      | BooleanQuestion
+      | MultipleChoiceQuestion
+    )[]
+  ): this {
+    const formattedQuestions: GameQuestion[] = questions.map((q) => {
+      const isBuilder =
+        q instanceof BooleanQuestion || q instanceof MultipleChoiceQuestion;
       const _q = isBuilder ? q.data : q;
 
-      if (!_q.value) throw new DiscordTriviaError('Custom Question is missing .value');
-      if (!_q.type) throw new DiscordTriviaError('Custom Question is missing .type');
-      if (!_q.correctAnswer) throw new DiscordTriviaError('Custom Question is missing _q.correctAnswer');
+      if (!_q.value)
+        throw new DiscordTriviaError("Custom Question is missing .value");
+      if (!_q.type)
+        throw new DiscordTriviaError("Custom Question is missing .type");
+      if (!_q.correctAnswer)
+        throw new DiscordTriviaError(
+          "Custom Question is missing _q.correctAnswer"
+        );
 
       return {
-        value:  _q.value,
-        category: _q.category || 'Custom',
-        difficulty: _q.difficulty || 'easy',
+        value: _q.value,
+        category: _q.category || "Custom",
+        difficulty: _q.difficulty || "easy",
         type: _q.type,
         correctAnswer: _q.correctAnswer,
-        incorrectAnswers: _q.incorrectAnswers || (_q.correctAnswer === 'true' ? 'false' : 'true'),
-        allAnswers: _q.type === QuestionTypes.Boolean ? ['true', 'false'] : Util.shuffleArray([_q.correctAnswer, ..._q.incorrectAnswers as IncorrectAnswers]),
-        checkAnswer: function(str:string) {
-          return str.toLowerCase() === this.correctAnswer.toLowerCase()
-        }
-      }
+        incorrectAnswers:
+          _q.incorrectAnswers ||
+          (_q.correctAnswer === "true" ? "false" : "true"),
+        allAnswers:
+          _q.type === QuestionTypes.Boolean
+            ? ["true", "false"]
+            : Util.shuffleArray([
+                _q.correctAnswer,
+                ...(_q.incorrectAnswers as IncorrectAnswers),
+              ]),
+        checkAnswer: function (str: string) {
+          return str.toLowerCase() === this.correctAnswer.toLowerCase();
+        },
+      };
     });
 
     this.questions = [...formattedQuestions];
@@ -307,10 +340,10 @@ class TriviaGame extends EventEmitter implements TriviaGame {
 
   /**
    * Sets the text outputs for the game
-   * @param {TextOutputs} options 
+   * @param {TextOutputs} options
    * @returns {this}
    */
-  public setGameTexts(options: Partial<TextOutputs>):this {
+  public setGameTexts(options: Partial<TextOutputs>): this {
     this.textOutputs = Object.assign(TriviaGame.textOutputDefaults, options);
     return this;
   }
@@ -330,7 +363,9 @@ class TriviaGame extends EventEmitter implements TriviaGame {
    * @param {GameQuestionOption} options
    * @returns {this}
    */
-  public setQuestionOptions(options: Omit<GameQuestionOptions, 'customQuestions'>): this {
+  public setQuestionOptions(
+    options: Omit<GameQuestionOptions, "customQuestions">
+  ): this {
     if (options.category)
       options.category = isNaN(+options.category)
         ? Category.idByName(options.category as CategoryNameType)!
@@ -421,12 +456,13 @@ class TriviaGame extends EventEmitter implements TriviaGame {
    * Ends this trivia game.
    * @param {boolean} [timedOut = false] Whether the game ended because of a queue timeout.
    */
-  public end(timedOut:boolean = false): void {
+  public end(timedOut: boolean = false): void {
     this.setState(GameStates.Ended);
     this.emit(GameEvents.End, this.data(true));
-    if (!timedOut) this.channel.send({
-      embeds: [this.embeds.finalLeaderboard().toJSON()],
-    });
+    if (!timedOut)
+      this.channel.send({
+        embeds: [this.embeds.finalLeaderboard().toJSON()],
+      });
   }
 
   /**
@@ -447,14 +483,16 @@ class TriviaGame extends EventEmitter implements TriviaGame {
     if (msg.deletable) this.messages.set(msg.id, msg.delete);
     this.queueMessage = msg;
 
-    await this.listenForNewPlayers();
+    await this.listenForNewPlayers(msg);
   }
 
   /**
    * Creates a listener for new members.
    * @private
    */
-  private async listenForNewPlayers(): Promise<void> {
+  private async listenForNewPlayers(
+    embedMessage: Message<boolean>
+  ): Promise<void> {
     const collector = this.queueMessage!.createMessageComponentCollector({
       time: this.gameOptions.queueTime,
       componentType: ComponentType.Button,
@@ -463,9 +501,13 @@ class TriviaGame extends EventEmitter implements TriviaGame {
 
     const handler = this.handleMemberJoin.bind(this);
 
-    collector.on("collect", handler);
+    collector.on("collect", (i) => handler(i, embedMessage));
     collector.on("end", async (_) => {
-      if (collector.endReason !== "limit" && this.players.size < this.gameOptions.minPlayerCount) return this.handleQueueTimeout();
+      if (
+        collector.endReason !== "limit" &&
+        this.players.size < this.gameOptions.minPlayerCount
+      )
+        return this.handleQueueTimeout();
 
       try {
         await this.initializeGame();
@@ -481,7 +523,8 @@ class TriviaGame extends EventEmitter implements TriviaGame {
    * @private
    */
   private async handleMemberJoin(
-    interaction: ButtonInteraction<CacheType>
+    interaction: ButtonInteraction<CacheType>,
+    embedMessage: Message<boolean>
   ): Promise<void> {
     const userId = interaction.user.id;
     if (this.players.has(userId)) {
@@ -503,8 +546,14 @@ class TriviaGame extends EventEmitter implements TriviaGame {
 
     this.players.set(member.id, player);
     this.emit(GameEvents.MemberJoin, player);
+    await embedMessage.edit({
+      embeds: [this.embeds.gameQueue()],
+      components: [buttonRowQueue(this.decoration.buttonStyle)],
+    });
+
     await interaction.reply({
-      content: this.textOutputs.memberJoinedGame(member),
+      ephemeral: true,
+      content: this.textOutputs.memberJoinedGamePrivate(),
     });
   }
 
@@ -515,10 +564,12 @@ class TriviaGame extends EventEmitter implements TriviaGame {
   private async initializeGame(): Promise<void> {
     this.leaderboard = this.players;
     const apiQuestions = await getQuestions(this.gameQuestionOptions);
-    
-    this.questions = [...this.questions, ...parseQuestions(apiQuestions)]
 
-    function parseQuestions(qs: (Question<unknown> | GameQuestion)[]): GameQuestion[] {
+    this.questions = [...this.questions, ...parseQuestions(apiQuestions)];
+
+    function parseQuestions(
+      qs: (Question<unknown> | GameQuestion)[]
+    ): GameQuestion[] {
       return qs.map((q) => {
         return {
           value: q.value,
@@ -527,11 +578,14 @@ class TriviaGame extends EventEmitter implements TriviaGame {
           difficulty: q.difficulty,
           correctAnswer: q.correctAnswer,
           incorrectAnswers: q.incorrectAnswers,
-          allAnswers: q.type === QuestionTypes.Boolean ? ['true', 'false'] : Util.shuffleArray([
-            q.correctAnswer,
-            ...q.incorrectAnswers,
-          ]),
-          type: q.type === 'boolean' ? QuestionTypes.Boolean : QuestionTypes.Multiple,
+          allAnswers:
+            q.type === QuestionTypes.Boolean
+              ? ["true", "false"]
+              : Util.shuffleArray([q.correctAnswer, ...q.incorrectAnswers]),
+          type:
+            q.type === "boolean"
+              ? QuestionTypes.Boolean
+              : QuestionTypes.Multiple,
           checkAnswer: (str) => str === q.correctAnswer,
         };
       });
@@ -595,7 +649,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
         let timeElapsed = Date.now() - emissionTime;
         if (timeElapsed > this.gameOptions.timePerQuestion) return;
 
-        await this.handleAnswer(i, question, timeElapsed);
+        await this.handleAnswer(i, collector, question, msg, timeElapsed);
       });
 
       collector.on("end", async () => {
@@ -614,7 +668,9 @@ class TriviaGame extends EventEmitter implements TriviaGame {
    */
   private async handleAnswer(
     interaction: ButtonInteraction<CacheType>,
+    collector: InteractionCollector<ButtonInteraction<CacheType>>,
     question: GameQuestion,
+    embedMessage: Message<boolean>,
     timeElapsed: number
   ): Promise<void> {
     const player = this.players.get(interaction.user.id);
@@ -631,24 +687,25 @@ class TriviaGame extends EventEmitter implements TriviaGame {
     }
 
     await interaction.reply({
-      content: this.textOutputs.answerLockedInPrivate(interaction.user, timeElapsed),
+      content: this.textOutputs.answerLockedInPrivate(
+        interaction.user,
+        timeElapsed
+      ),
       ephemeral: true,
     });
 
-    let msg = await this.channel.send({
-      content: this.textOutputs.answerLockedInPublic(player), // add
-    });
+    // let msg = await this.channel.send({
+    //   content: this.textOutputs.answerLockedInPublic(player)
+    // });
 
-    this.messages.set(msg.id, msg.delete);
+    // this.messages.set(msg.id, msg.delete);
 
     player.hasAnswered = true;
-    console.log(interaction.customId)
     const answer = (
       question.type == QuestionTypes.Multiple
         ? question.allAnswers
-        : ['false', 'true']
+        : ["false", "true"]
     )[Number(interaction.customId)];
-    console.log(answer)
 
     player.setIsCorrect(question.correctAnswer === answer);
 
@@ -675,6 +732,17 @@ class TriviaGame extends EventEmitter implements TriviaGame {
       player.isCorrect = false;
       player.correctAnswerStreak = 0;
     }
+
+    await embedMessage.edit({
+      embeds: [this.embeds.question(question)],
+      components: [
+        question.type === QuestionTypes.Multiple
+          ? buttonRowChoicesMultiple(this.decoration.buttonStyle)
+          : buttonRowChoicesBoolean(this.decoration.buttonStyle),
+      ],
+    });
+
+    if (this.players.every((player) => player.hasAnswered)) collector.stop();
   }
 
   /**

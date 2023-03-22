@@ -7,7 +7,11 @@ import type {
   Collection,
   Snowflake,
 } from "discord.js";
-import { BooleanString, IncorrectAnswers, QuestionDifficultyType } from "open-trivia-db";
+import {
+  BooleanString,
+  IncorrectAnswers,
+  QuestionDifficultyType,
+} from "open-trivia-db";
 import TriviaPlayer from "../Classes/TriviaPlayer";
 const replyCommand: CommandInteraction = {} as CommandInteraction;
 const replyMessage: Message = {} as Message;
@@ -15,14 +19,14 @@ const replyMessage: Message = {} as Message;
 /**
  * Represents a developer-made question.
  */
-export type CustomQuestion<T extends 'multiple' | 'boolean'> = {
+export type CustomQuestion<T extends "multiple" | "boolean"> = {
   category: string;
   type: T;
   difficulty: QuestionDifficultyType;
   value: string;
   correctAnswer: string | BooleanString;
-  incorrectAnswers: T extends 'multiple' ? IncorrectAnswers : BooleanString;
-}
+  incorrectAnswers: T extends "multiple" ? IncorrectAnswers : BooleanString;
+};
 
 /**
  * A Discord command interaction or message.

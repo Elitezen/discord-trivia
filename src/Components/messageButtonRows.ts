@@ -23,10 +23,7 @@ const buttonRowChoicesMultiple = (
  */
 const buttonRowChoicesBoolean = (style: ButtonStyle) => {
   return new ActionRowBuilder<ButtonBuilder>().addComponents([
-    new ButtonBuilder()
-      .setCustomId("1")
-      .setLabel("True")
-      .setStyle(style),
+    new ButtonBuilder().setCustomId("1").setLabel("True").setStyle(style),
     new ButtonBuilder()
       .setCustomId("0")
       .setLabel("False")
