@@ -279,7 +279,6 @@ class TriviaGame extends EventEmitter implements TriviaGame {
           ? Category.idByName(category as unknown as CategoryNameType)
           : category,
       difficulty: this.gameQuestionOptions.difficulty || null,
-      amount: this.gameQuestionOptions.amount,
       timeEnd: hasEnded ? Date.now() : null,
       players: this.leaderboard,
     };
@@ -343,7 +342,7 @@ class TriviaGame extends EventEmitter implements TriviaGame {
    * @param {TextOutputs} options
    * @returns {this}
    */
-  public setGameTexts(options: Partial<TextOutputs>): this {
+  public setGameTexts(options: Partial<GameOptions>): this {
     this.textOutputs = Object.assign(TriviaGame.textOutputDefaults, options);
     return this;
   }

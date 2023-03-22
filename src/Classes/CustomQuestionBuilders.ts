@@ -67,6 +67,11 @@ export class BooleanQuestion extends BaseCustomQuestionBuilder {
     this.data.type = QuestionTypes.Boolean;
   }
 
+  /**
+   * Sets the correct answer for this question.
+   * @param {BooleanString} answer 'true' or 'false'
+   * @returns {this}
+   */
   setCorrectAnswer(answer: BooleanString): this {
     this.data.correctAnswer = answer;
     this.data.incorrectAnswers = answer === "true" ? "false" : "true";
@@ -104,6 +109,9 @@ export class MultipleChoiceQuestion extends BaseCustomQuestionBuilder {
   }
 }
 
+/**
+ * Provides easier readable and memerable extractions for the builders.
+ */
 export const CustomQuestionBuilder = {
   Boolean: BooleanQuestion,
   Multiple: MultipleChoiceQuestion,
