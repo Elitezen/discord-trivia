@@ -1,6 +1,6 @@
 import { ButtonStyle, Collection } from "discord.js";
 
-import { DecorationOptions, GameOptions } from "../Typings/interfaces";
+import { DecorationOptions } from "../Typings/interfaces";
 import type { Snowflake } from "discord.js";
 import { DiscordComponentResolvable } from "../Typings/types";
 import RootComponent from "./RootComponent";
