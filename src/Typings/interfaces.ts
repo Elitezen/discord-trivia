@@ -192,7 +192,7 @@ export interface GameQuestion {
 
   /**
    * Checks if the given string equals this question's correct answer.
-   * @param {string} str 
+   * @param {string} str
    * @returns {boolean}
    */
   checkAnswer: (str: string) => boolean;
@@ -238,11 +238,11 @@ export interface Player {
  */
 export interface TextOutputs
   extends Record<string, (...args: any[]) => string | string> {
-    /**
-     * Sent whenever a player tries to join a game they are already queued for.
-     * @param {User} user The player's `User` object. 
-     * @returns {string} The string to send.
-     */
+  /**
+   * Sent whenever a player tries to join a game they are already queued for.
+   * @param {User} user The player's `User` object.
+   * @returns {string} The string to send.
+   */
   alreadyQueued: (user: User) => string;
 
   /**
