@@ -8,6 +8,7 @@ import {
   Message,
   GuildMember,
   ChannelType,
+  MessageType,
 } from "discord.js";
 import {
   DiscordComponentResolvable,
@@ -89,8 +90,8 @@ export default class RootComponent {
    * @param {DiscordComponentResolvable} root The root component data.
    */
   constructor(root: DiscordComponentResolvable) {
-    if (![2, 3].includes(root.type)) {
-      throw "Invalid Root!";
+    if (!(root as Message).content && !(root as CommandInteraction).commandName) {
+      throw "Provided root component is not of type Message or CommandInteraction";
     }
 
     if (root.channel === null) throw TypeError("The provided channel is null");

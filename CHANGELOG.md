@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2.0.3
+- Fixed bug causing error message "Invalid Root!"
+- Compilation now targets ES2020
+
 ## 2.0.0
   - Removed `TriviaCommandBuilder` as it's usage was verbose. I am waiting for Discord to allow implementation of select menus into modals to create a successor.
   - `TriviaGame.start()` has been renamed to `TriviaGame.setup()` 

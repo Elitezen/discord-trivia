@@ -7,10 +7,10 @@
 A package that provides an easy way to create fully-fledged trivia games for Discord bots with [Discord.JS](https://discord.js.org/#/). Includes support for +20 categories as well as customizable game settings, themes, and game messages. Comes with a built-in leaderboard system to track scores and rankings.
 
 
-## 2.0.0 Major Version Update
+## 2.0.3
 
-
-[Click to view the full changelog](https://github.com/Elitezen/discord-trivia/blob/main/CHANGELOG.md#200)
+- Fixed bug causing error message "Invalid Root!"
+- Compilation now targets ES2020
 
 
 ---
