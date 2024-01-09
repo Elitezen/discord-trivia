@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 3.0.0
+
+
+
 ## 2.0.3
 - Fixed bug causing error message "Invalid Root!"
 - Compilation now targets ES2020

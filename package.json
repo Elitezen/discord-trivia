@@ -38,14 +38,13 @@
   },
   "homepage": "https://github.com/Elitezen/discord-trivia#readme",
   "dependencies": {
-    "discord-api-types": "latest",
-    "discord.js": "latest",
-    "open-trivia-db": "latest"
+    "discord.js": "^14.14.1",
+    "open-trivia-db": "^2.1.5"
   },
   "devDependencies": {
-    "@types/node": "latest",
-    "nodemon": "latest",
-    "prettier": "latest",
-    "typescript": "latest"
+    "@types/node": "^20.10.0",
+    "nodemon": "^3.0.1",
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.2"
   }
 }
