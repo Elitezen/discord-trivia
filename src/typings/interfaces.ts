@@ -1,5 +1,5 @@
 import type { ButtonBuilder, EmbedBuilder, User } from 'discord.js';
-import { MessageDeleterConfig } from './types';
+import { Leaderboard, MessageDeleterConfig } from './types';
 import Player from '../classes/Player';
 import { BooleanString, CategoryNameType, IncorrectAnswers, QuestionDifficulties, QuestionDifficultyType, QuestionTypeType, QuestionTypes } from 'open-trivia-db';
 
@@ -63,6 +63,36 @@ export interface GameConfig {
 
     maximumStreakBonus: number
 }
+
+/**
+ * Represents a game's data.
+ */
+export interface GameData {
+    /**
+     * This game's questions to use.
+     */
+    questions: GameQuestion[];
+  
+    /**
+     * The trivia category of this game.
+     */
+    category: CategoryNameType | number | null;
+  
+    /**
+     * This game's difficulty.
+     */
+    difficulty: QuestionDifficultyType | null;
+  
+    /**
+     * The date timestamp of when this game ended.
+     */
+    timeEnd: number | null;
+  
+    /**
+     * The players participating in this game.
+     */
+    players: Leaderboard;
+  }
 
 export interface GameQuestionOptions extends Record<string, any> {
     /**

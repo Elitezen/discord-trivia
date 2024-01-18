@@ -1,4 +1,7 @@
+import { Collection, Snowflake } from "discord.js";
 import { BooleanString, IncorrectAnswers, QuestionDifficultyType } from "open-trivia-db";
+
+import Player from "../classes/Player";
 
 export type MessageDeleterConfig = number | null;
 
@@ -13,3 +16,8 @@ export type CustomQuestion<T extends "multiple" | "boolean"> = {
     correctAnswer: string | BooleanString;
     incorrectAnswers: T extends "multiple" ? IncorrectAnswers : BooleanString;
   };
+
+  /**
+ * Represents a game's leaderboard.
+ */
+export type Leaderboard = Collection<Snowflake, Player>;

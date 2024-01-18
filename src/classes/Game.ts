@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection, ComponentType, EmbedBuilder } from 'discord.js';
-import type { ButtonInteraction, CacheType, CommandInteraction, InteractionCollector, Message, Snowflake, TextBasedChannel, User } from 'discord.js';
-import type { GameConfig, GameMessageData, GameQuestion, GameQuestionOptions } from "../typings/interfaces";
+import type { ButtonInteraction, CacheType, CommandInteraction, GuildMember, InteractionCollector, Message, Snowflake, TextBasedChannel, User } from 'discord.js';
+import type { GameConfig, GameData, GameMessageData, GameQuestion } from "../typings/interfaces";
 import type GameManager from "./GameManager";
 import Player from './Player';
 import { promisify } from 'util';
@@ -8,10 +8,23 @@ import { Category, IncorrectAnswers, Question, QuestionTypes, Util, getQuestions
 import { CustomQuestion } from '../typings/types';
 import { BooleanQuestion, MultipleChoiceQuestion } from './CustomQuestionBuilder';
 import { buttonRowChoicesBoolean, buttonRowChoicesMultiple } from '../components/buttons';
+import { EventEmitter } from 'events';
+import { GameEvents } from '../typings/enums';
+import DefaultEmbeds from './DefaultEmbeds';
 
 const wait = promisify(setTimeout);
 
-export default class Game {
+declare interface TriviaGame {
+	on(event: GameEvents.Pending | "pending", listener: () => void): this;
+	on(event: GameEvents.Queue | "queue", listener: () => void): this;
+	on(
+	  event: GameEvents.PlayerJoin | "memberJoin",
+	  listener: (member: GuildMember) => void
+	): this;
+	on(event: GameEvents.End | "end", listener: (data: GameData) => void): this;
+}
+
+export default class Game extends EventEmitter implements TriviaGame {
     public readonly channel: TextBasedChannel;
     public readonly manager: GameManager;
     public readonly players: Collection<Snowflake, Player> = new Collection();
@@ -20,10 +33,6 @@ export default class Game {
 
     public questions:GameQuestion[] = [];
 
-    public setQuestionOptions() {
-    
-    }
-    
     public config: GameConfig = {
         buttons: {
           join: new ButtonBuilder().setCustomId("1").setLabel("Join").setStyle(ButtonStyle.Primary),
@@ -36,142 +45,18 @@ export default class Game {
         },
 
         embeds: {
-            queue: (players) => {
-                const embed = new EmbedBuilder()
-                  .setFooter({
-                    text: "Click the **Join** button to enter!",
-                  });
-
-                if (players && this.players.size)
-                  embed.addFields({
-                    name: "Queue",
-                    value: players
-                    .map((p) => `▶️ ${p.user.toString()}`)
-                    .join("\n"),
-                  });
-
-                return embed;
-            },
-            playerJoin: () => new EmbedBuilder()
-                .setDescription('PLAYER JOIN'),
-            gameStart: () => {
-              let category =
-                Category.nameById(
-                  this.config.fetchQuestionsOptions.category
-                  ? +this.config.fetchQuestionsOptions.category
-                  : 0
-                ) ||
-                this.config.fetchQuestionsOptions.category?.toString() ||
-                "Custom";
-
-              const embed = new EmbedBuilder()
-                .setDescription("The game is now starting!")
-                .addFields({
-                  name: "Question Amount",
-                  value: this.questions.length.toString(),
-                });
-
-              embed.addFields({ name: "Category", value: category });
-
-              return embed
-            },
-            gameQueueTimeout: () => new EmbedBuilder()
-                .setDescription('GAME QUEUE TIMEOUT'),
-            question: (question:GameQuestion) => {
-                const playersAnswered = this.players.filter((p) => p.hasAnswered);
-                const embed = new EmbedBuilder()
-                .addFields(
-                    { name: "Category", value: question.category },
-                    { name: "Question", value: question.value }
-                )
-                .setFooter({
-                    text: `You have ${
-                    this.config.timePerQuestion / 1_000
-                    } seconds to answer`,
-                });
-                if (question.type === QuestionTypes.Multiple)
-                embed.addFields({
-                    name: "Choices",
-                    value: question.allAnswers
-                    .map((ans, i) => `${["🇦", "🇧", "🇨", "🇩"][i]} **${ans}**`)
-                    .join("\n"),
-                });
-                if (playersAnswered.size)
-                embed.setDescription(
-                    `\`${playersAnswered.size}/${this.players.size} answers locked in\``
-                );
-                return embed;
-            },
-            leaderboardUpdate: (lastQuestion:GameQuestion) => {
-                const embed = new EmbedBuilder().setTitle("Leaderboard").addFields(
-                    Array.from(this.leaderboard).map((entry, i) => {
-                      const player = entry[1];
-              
-                      const streakBonus = Math.min(
-                        Math.max(
-                          (player.correctAnswerStreak -
-                            (this.config.streakDefinitionLevel - 1)) *
-                            this.config.pointsPerStreakAmount,
-                          0
-                        ),
-                        this.config.maximumStreakBonus
-                      );
-              
-                      return {
-                        name: `#${i + 1}`,
-                        value: `${
-                          player.isCorrect ? "✅" : "❌"
-                        } ${player.user.toString()}  ${player.points} ${
-                          player.correctAnswerStreak >=
-                          this.config.streakDefinitionLevel
-                            ? ` (🔥 +${streakBonus})`
-                            : ""
-                        }`,
-                      };
-                    })
-                );
-              
-                  let description = "**Round Over**!\n";
-              
-                  if (this.config.showAnswers) {
-                    description += `Correct Answer:\n**${lastQuestion.correctAnswer}**\n`;
-                  }
-              
-                  const playersWithStreaks = this.players.filter(
-                    (p) => p.correctAnswerStreak >= 3
-                  );
-                  if (playersWithStreaks.size) {
-                    const list = playersWithStreaks
-                      .map((p) => p.user.toString())
-                      .join(", ");
-                    description += `\n🔥 ${list} are on a streak!`;
-                  }
-              
-                  if (this.players.every((p) => p.isCorrect)) {
-                    embed.setFooter({
-                      text: "Everyone got it right!",
-                    });
-                  } else if (this.players.every((p) => !p.isCorrect)) {
-                    embed.setFooter({
-                      text: "Nobody got it right.",
-                    });
-                  }
-              
-                  embed.setDescription(description);
-                  return embed;
-            },
-            playerAlreadyAnswered: () => new EmbedBuilder()
-              .setDescription("PLAYER ANSWERED"),
-            playerAnsweredStats: () => new EmbedBuilder()
-              .setDescription("ANSWERED STATS"),
-            playerNotInMatch: () => new EmbedBuilder()
-              .setDescription("PLAYER NOT IN MATCH"),
-            playerAlreadyQueued: () => new EmbedBuilder()
-                .setDescription("PLAYER ALREADY IN MATCH"),
-            filterReject: () => new EmbedBuilder()
-                .setDescription("USER REJECTED BY FILTER"),
-            gameEnd: () => new EmbedBuilder()
-                .setDescription('GAME END'),
+            queue: () => DefaultEmbeds.gameQueue(this),
+            playerJoin: (player:Player) => DefaultEmbeds.playerJoin(player, this),
+            gameStart: () => DefaultEmbeds.gameStart(this),
+            gameQueueTimeout: () => DefaultEmbeds.gameQueueTimeout(),
+            question: (question:GameQuestion) => DefaultEmbeds.question(this, question),
+            leaderboardUpdate: (lastQuestion:GameQuestion) => DefaultEmbeds.leaderboardUpdate(lastQuestion, this),
+            playerAlreadyAnswered: () => DefaultEmbeds.playerAlreadyAnswered(),
+            playerAnsweredStats: (player:Player, timeElapsed:number) => DefaultEmbeds.playerAnsweredStats(this, player, timeElapsed),
+            playerNotInMatch: () => DefaultEmbeds.playerNotInMatch(),
+            playerAlreadyQueued: () => DefaultEmbeds.playerAlreadyQueued(),
+            filterReject: () => DefaultEmbeds.filterRejected(),
+            gameEnd: () => DefaultEmbeds.gameEnd(),
         },
 
         fetchQuestionsOptions: {
@@ -241,11 +126,17 @@ export default class Game {
     }
 
     constructor(manager: GameManager, channel:TextBasedChannel) {
+		super();
+
         this.manager = manager;
         this.channel = channel;
+
+		this.emit(GameEvents.Pending);
     }
 
     async startQueue(interaction?:CommandInteraction):Promise<void> {
+		this.emit(GameEvents.Queue);
+
         try {
             let queueMessage: Message;
 
@@ -324,6 +215,8 @@ export default class Game {
 
         this.addPlayer(interaction.user);
 
+		this.emit(GameEvents.PlayerJoin)
+
         await interaction.reply({
             ephemeral: true,
             embeds: [this.config.embeds.playerJoin(this.players.get(interaction.user.id)!)]
@@ -339,9 +232,9 @@ export default class Game {
 			fetchedQuestions = await getQuestions(this.config.fetchQuestionsOptions);
 		}
         
-        if (this.config.customQuestions.length) {
+		if (this.config.customQuestions.length) {
 			customQuestions = this.config.customQuestions;
-        }
+		}
 
 		this.questions = [...this.parseFetchedQuestions(fetchedQuestions), ...this.parseCustomQuestions(customQuestions)];
 
@@ -362,6 +255,8 @@ export default class Game {
             await this.emitQuestion(question);
             await wait(this.config.timeBetweenQuestions);
         }
+
+		this.emit(GameEvents.End);
 
         await this.channel.send({
             embeds: [this.config.embeds.gameEnd(this.leaderboard)]

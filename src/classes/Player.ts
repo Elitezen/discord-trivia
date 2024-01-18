@@ -5,7 +5,7 @@ import Game from "./Game";
  * Represents a trivia game player.
  * @implements {Player}
  */
-export default class TriviaPlayer {
+export default class Player {
   /**
    * The game this player belongs to.
    * @type {Game}
