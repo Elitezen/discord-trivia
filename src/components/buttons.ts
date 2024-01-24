@@ -6,10 +6,10 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
  * @returns {ActionRowBuilder<ButtonBuilder>}
  */
 const buttonRowChoicesMultiple = (
-  builders: ButtonBuilder[]
+  builders: ButtonBuilder[],
 ): ActionRowBuilder<ButtonBuilder> => {
   return new ActionRowBuilder<ButtonBuilder>().addComponents(
-    builders.map((btn, i) => btn.setCustomId(`${i}`))
+    builders.map((btn, i) => btn.setCustomId(`${i}`)),
   );
 };
 
