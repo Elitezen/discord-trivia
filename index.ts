@@ -1,50 +1,17 @@
-import { BaseCustomQuestionBuilder, BooleanQuestion, MultipleChoiceQuestion, CustomQuestionBuilder } from "./src/Classes/CustomQuestionBuilders";
-import DiscordTriviaError from "./src/Classes/DiscordTriviaError";
-import EmbedGenerator from "./src/Classes/EmbedGenerator";
-import RootComponent from "./src/Classes/RootComponent";
-import TriviaGame from "./src/Classes/TriviaGame";
-import TriviaManager from "./src/Classes/TriviaManager";
-import TriviaPlayer from "./src/Classes/TriviaPlayer";
-import Validator from "./src/Classes/Validator";
+import Game from "./src/classes/Game";
+import Player from "./src/classes/Player";
+import GameManager from "./src/classes/GameManager";
+import DefaultEmbeds from "./src/classes/DefaultEmbeds";
 
-import { buttonRowChoicesMultiple, buttonRowChoicesBoolean, buttonRowQueue } from './src/Components/messageButtonRows';
-
-import { GameStates, GameEvents } from "./src/Typings/enums";
-import { DecorationOptions, GameOptions, GameData, GameQuestionOptions, GameQuestion, Player } from "./src/Typings/interfaces";
-import { CustomQuestion, DiscordComponentResolvable, DiscordComponentResolvableEnum, CommandInteractionReply, MessageReply, Leaderboard } from "./src/Typings/types";
-
-import { CategoryNames,  QuestionDifficulties, QuestionTypes } from "open-trivia-db";
+export * from "./src/classes/CustomQuestionBuilder";
+export * from './src/components/buttons';
+export * from './src/typings/interfaces';
+export * from './src/typings/enums';
+export * from './src/typings/types';
 
 export {
-  BaseCustomQuestionBuilder, 
-  BooleanQuestion, 
-  MultipleChoiceQuestion,
-  CustomQuestionBuilder,
-  DiscordTriviaError,
-  EmbedGenerator,
-  RootComponent, 
-  TriviaGame, 
-  TriviaManager, 
-  TriviaPlayer, 
-  Validator, 
-  buttonRowChoicesMultiple,
-  buttonRowChoicesBoolean,
-  buttonRowQueue,
-  GameStates,
-  GameEvents,
-  DecorationOptions, 
-  GameOptions, 
-  GameData,
-  GameQuestionOptions,
-  GameQuestion,
-  Player,
-  CustomQuestion,
-  DiscordComponentResolvable,
-  DiscordComponentResolvableEnum,
-  CommandInteractionReply,
-  MessageReply, 
-  Leaderboard,
-  CategoryNames,
-  QuestionDifficulties,
-  QuestionTypes
+    Game,
+    Player,
+    GameManager,
+    DefaultEmbeds
 }
