@@ -1,26 +1,26 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 
-/**
- * Returns the Action Row of multiple choice buttons.
- * @param {ButtonStyle} style
- * @returns {ActionRowBuilder<ButtonBuilder>}
- */
 const buttonRowChoicesMultiple = (
-  builders: ButtonBuilder[],
+    builders: ButtonBuilder[]
 ): ActionRowBuilder<ButtonBuilder> => {
-  return new ActionRowBuilder<ButtonBuilder>().addComponents(
-    builders.map((btn, i) => btn.setCustomId(`${i}`)),
-  );
+    return new ActionRowBuilder<ButtonBuilder>().addComponents(
+        builders.map((btn, i) => btn.setCustomId(`${i}`))
+    );
 };
 
+/**
+ * Returns a row of buttons for question choices
+ * @param {ButtonBuilder[]} builders
+ * @returns {ActionRowBuilder<ButtonBuilder>}
+ */
 const buttonRowChoicesBoolean = (builders: ButtonBuilder[]) => {
-  return new ActionRowBuilder<ButtonBuilder>().addComponents([
-    // True Button
-    builders[0].setCustomId("1"),
+    return new ActionRowBuilder<ButtonBuilder>().addComponents([
+        // True Button
+        builders[0].setCustomId("1"),
 
-    // False Button
-    builders[1].setCustomId("0"),
-  ]);
+        // False Button
+        builders[1].setCustomId("0")
+    ]);
 };
 
 /**
@@ -29,9 +29,9 @@ const buttonRowChoicesBoolean = (builders: ButtonBuilder[]) => {
  * @returns {ActionRowBuilder<ButtonBuilder>}
  */
 const buttonRowQueue = (style: ButtonStyle) => {
-  return new ActionRowBuilder<ButtonBuilder>().addComponents([
-    new ButtonBuilder().setCustomId("1").setLabel("Join").setStyle(style),
-  ]);
+    return new ActionRowBuilder<ButtonBuilder>().addComponents([
+        new ButtonBuilder().setCustomId("1").setLabel("Join").setStyle(style)
+    ]);
 };
 
 export { buttonRowChoicesMultiple, buttonRowChoicesBoolean, buttonRowQueue };
