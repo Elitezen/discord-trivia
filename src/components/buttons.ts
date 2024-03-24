@@ -1,4 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+import { GameButtonIds } from "../typings/enums";
 
 const buttonRowChoicesMultiple = (
     builders: ButtonBuilder[]
@@ -15,11 +16,8 @@ const buttonRowChoicesMultiple = (
  */
 const buttonRowChoicesBoolean = (builders: ButtonBuilder[]) => {
     return new ActionRowBuilder<ButtonBuilder>().addComponents([
-        // True Button
-        builders[0].setCustomId("1"),
-
-        // False Button
-        builders[1].setCustomId("0")
+        builders[0].setCustomId(GameButtonIds.QuestionOptionTrue),
+        builders[1].setCustomId(GameButtonIds.QuestionOptionFalse)
     ]);
 };
 
@@ -30,7 +28,10 @@ const buttonRowChoicesBoolean = (builders: ButtonBuilder[]) => {
  */
 const buttonRowQueue = (style: ButtonStyle) => {
     return new ActionRowBuilder<ButtonBuilder>().addComponents([
-        new ButtonBuilder().setCustomId("1").setLabel("Join").setStyle(style)
+        new ButtonBuilder()
+            .setCustomId(GameButtonIds.Join)
+            .setLabel("Join")
+            .setStyle(style)
     ]);
 };
 

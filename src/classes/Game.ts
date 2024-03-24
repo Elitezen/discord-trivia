@@ -135,8 +135,10 @@ class Game extends EventEmitter implements Game {
             gameQueueTimeout: () => DefaultEmbeds.gameQueueTimeout(),
             question: (question: GameQuestion) =>
                 DefaultEmbeds.question(this, question),
-            leaderboardUpdate: (lastQuestion: GameQuestion) =>
-                DefaultEmbeds.leaderboardUpdate(lastQuestion, this),
+            leaderboardUpdate: (
+                leaderboard: Collection<string, Player>,
+                lastQuestion: GameQuestion
+            ) => DefaultEmbeds.leaderboardUpdate(this, lastQuestion),
             playerAlreadyAnswered: () => DefaultEmbeds.playerAlreadyAnswered(),
             playerAnsweredStats: (player: Player, timeElapsed: number) =>
                 DefaultEmbeds.playerAnsweredStats(this, player, timeElapsed),
@@ -407,11 +409,11 @@ class Game extends EventEmitter implements Game {
         });
 
         player.hasAnswered = true;
-        const answer = (
+
+        const answer =
             question.type == QuestionTypes.Multiple
-                ? question.allAnswers
-                : ["false", "true"]
-        )[Number(interaction.customId)];
+                ? question.allAnswers[Number(interaction.customId)]
+                : interaction.customId;
 
         player.setIsCorrect(question.correctAnswer === answer);
 
@@ -560,6 +562,8 @@ class Game extends EventEmitter implements Game {
             await this.channel.send({
                 embeds: [this.config.embeds.gameQueueTimeout()]
             });
+
+            this.end();
         } catch (err) {
             console.error(err);
         }
@@ -574,7 +578,9 @@ class Game extends EventEmitter implements Game {
         this.leaderboard = this.leaderboard.sort((a, b) => b.points - a.points);
 
         const msg = await this.channel.send({
-            embeds: [this.config.embeds.leaderboardUpdate(question)]
+            embeds: [
+                this.config.embeds.leaderboardUpdate(this.leaderboard, question)
+            ]
         });
 
         await this.handleMessageDelete(msg, "leaderboardUpdate");
@@ -666,11 +672,11 @@ class Game extends EventEmitter implements Game {
                 );
             if (!_q.correctAnswer)
                 throw new Error(
-                    "Custom Question is missing required property correctAnswer"
+                    "Custom Question is missing required property .correctAnswer"
                 );
             if (!_q.incorrectAnswers)
                 throw new Error(
-                    "Custom Question is missing required property incorrectAnswers"
+                    "Custom Question is missing required property .incorrectAnswers"
                 );
 
             return {
@@ -822,6 +828,7 @@ class Game extends EventEmitter implements Game {
      */
     private async queueListener(message: Message) {
         const collector = message.createMessageComponentCollector({
+            filter: (i) => i.customId == GameButtonIds.Join,
             time: this.config.queueDuration,
             componentType: ComponentType.Button,
             max: this.config.maxPlayerCount

@@ -1,4 +1,4 @@
-import { EmbedBuilder } from "discord.js";
+import { Collection, EmbedBuilder, Snowflake } from "discord.js";
 import { Category, QuestionTypes } from "open-trivia-db";
 
 import type Game from "./Game";
@@ -121,7 +121,10 @@ export default abstract class DefaultEmbeds {
      * @param {GameQuestion} question The question of the round.
      * @returns {EmbedBuilder}
      */
-    static leaderboardUpdate(question: GameQuestion, game: Game): EmbedBuilder {
+    static leaderboardUpdate(
+        game: Game,
+        lastQuestion: GameQuestion
+    ): EmbedBuilder {
         const embed = new EmbedBuilder().setTitle("Leaderboard").addFields(
             Array.from(game.leaderboard).map((entry, i) => {
                 const player = entry[1] as Player;
@@ -153,7 +156,7 @@ export default abstract class DefaultEmbeds {
         let description = "**Round Over**!\n";
 
         if (game.config.showAnswers) {
-            description += `Correct Answer:\n**${question.correctAnswer}**\n`;
+            description += `Correct Answer:\n**${lastQuestion.correctAnswer}**\n`;
         }
 
         const playersWithStreaks = game.players.filter(

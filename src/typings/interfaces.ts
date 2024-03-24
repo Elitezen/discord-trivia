@@ -1,4 +1,4 @@
-import type { ButtonBuilder, EmbedBuilder, User } from "discord.js";
+import type { ButtonBuilder, Collection, EmbedBuilder, User } from "discord.js";
 import { CustomQuestion, Leaderboard, MessageDeleterConfig } from "./types";
 import Player from "../classes/Player";
 import {
@@ -138,7 +138,10 @@ export interface GameEmbeds {
     playerJoin: (player: Player) => EmbedBuilder;
     gameQueueTimeout: () => EmbedBuilder;
     question: (question: GameQuestion) => EmbedBuilder;
-    leaderboardUpdate: (leaderboard: any) => EmbedBuilder;
+    leaderboardUpdate: (
+        leaderboard: Collection<string, Player>,
+        lastQuestion: GameQuestion
+    ) => EmbedBuilder;
 
     playerNotInMatch: (user: User) => EmbedBuilder;
     playerAlreadyAnswered: (player: Player) => EmbedBuilder;
@@ -146,7 +149,7 @@ export interface GameEmbeds {
     playerAlreadyQueued: (player: Player) => EmbedBuilder;
 
     filterReject: (user: User) => EmbedBuilder;
-    gameEnd: (leaderboard: any) => EmbedBuilder;
+    gameEnd: (leaderboard: Collection<string, Player>) => EmbedBuilder;
 }
 
 /**
