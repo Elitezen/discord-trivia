@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 3.0.2
+- Additional bug fixes to answer checking.
+
 ## 3.0.1
 
 - Fixed a bug which caused any non-first correct answers to be counted as incorrect.

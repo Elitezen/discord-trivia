@@ -5,7 +5,12 @@ const buttonRowChoicesMultiple = (
     builders: ButtonBuilder[]
 ): ActionRowBuilder<ButtonBuilder> => {
     return new ActionRowBuilder<ButtonBuilder>().addComponents(
-        builders.map((btn, i) => btn.setCustomId(`${i}`))
+        builders.map((btn, i) => btn.setCustomId([
+            GameButtonIds.QuestionOptionA,
+            GameButtonIds.QuestionOptionB,
+            GameButtonIds.QuestionOptionC,
+            GameButtonIds.QuestionOptionD,
+        ][i]))
     );
 };
 

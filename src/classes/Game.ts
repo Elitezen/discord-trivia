@@ -409,10 +409,15 @@ class Game extends EventEmitter implements Game {
         });
 
         player.hasAnswered = true;
-
         const answer =
             question.type == QuestionTypes.Multiple
-                ? question.allAnswers[Number(interaction.customId)]
+                ? question.allAnswers[[
+                    GameButtonIds.QuestionOptionA,
+                    GameButtonIds.QuestionOptionB,
+                    GameButtonIds.QuestionOptionC,
+                    GameButtonIds.QuestionOptionD
+                    // @ts-ignore
+                ].indexOf(interaction.customId as 'a' | 'b' | 'c' | 'd')]
                 : interaction.customId;
 
         player.setIsCorrect(question.correctAnswer === answer);
